@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>陵水数投 - 管理后台</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fb; min-height: 100vh; }
+    
+    /* 登录页样式 */
+    .login-page { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .login-box { background: #fff; padding: 40px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); width: 380px; }
+    .login-logo { text-align: center; margin-bottom: 30px; }
+    .login-logo h2 { color: #333; font-size: 22px; margin-bottom: 8px; }
+    .login-logo p { color: #999; font-size: 14px; }
+    .login-form .form-group { margin-bottom: 20px; }
+    .login-form .form-label { display: block; margin-bottom: 8px; font-size: 14px; color: #666; }
+    .login-form .form-input { width: 100%; padding: 12px 15px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; transition: border-color 0.2s; }
+    .login-form .form-input:focus { outline: none; border-color: #667eea; }
+    .login-form .login-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; transition: opacity 0.2s; }
+    .login-form .login-btn:hover { opacity: 0.9; }
+    .login-error { color: #ff4d4f; font-size: 13px; margin-top: 10px; text-align: center; display: none; }
+    
+    /* 主页面样式 - 左侧菜单布局 */
+    .main-page { display: none; min-height: 100vh; }
+    .main-page.show { display: flex; }
+    .login-page.hide { display: none; }
+    
+    /* 左侧边栏 */
+    .sidebar { width: 220px; background: #001529; min-height: 100vh; flex-shrink: 0; }
+    .sidebar-logo { padding: 20px; text-align: center; border-bottom: 1px solid #0d2137; }
+    .sidebar-logo h2 { color: #fff; font-size: 16px; font-weight: 600; }
+    .sidebar-logo p { color: #5a7a9a; font-size: 12px; margin-top: 5px; }
+    .sidebar-menu { padding: 10px 0; }
+    .menu-item { display: flex; align-items: center; padding: 14px 24px; color: #8a9bae; cursor: pointer; transition: all 0.2s; border-left: 3px solid transparent; }
+    .menu-item:hover { background: #0d2137; color: #fff; }
+    .menu-item.active { background: #1890ff; color: #fff; border-left-color: #1890ff; }
+    .menu-icon { width: 18px; margin-right: 12px; font-size: 16px; }
+    .menu-text { font-size: 14px; }
+    
+    /* 右侧内容区 */
+    .main-content { flex: 1; display: flex; flex-direction: column; background: #f0f2f5; }
+    .header { background: #fff; padding: 0 24px; height: 64px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+    .header-left h1 { font-size: 18px; font-weight: 600; color: #333; }
+    .header-right { display: flex; align-items: center; gap: 15px; }
+    .user-info { font-size: 14px; color: #666; }
+    .logout-btn { padding: 6px 14px; background: #fff; border: 1px solid #d9d9d9; color: #666; border-radius: 4px; cursor: pointer; font-size: 13px; }
+    .logout-btn:hover { color: #1890ff; border-color: #1890ff; }
+    .content-area { flex: 1; padding: 24px; overflow-y: auto; }
+    .upload-area { border: 2px dashed #d9d9d9; border-radius: 8px; padding: 20px; text-align: center; cursor: pointer; transition: border-color 0.2s; min-height: 100px; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+    .upload-area:hover { border-color: #1890ff; }
+    .card { background: #fff; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+    .card-title { font-size: 18px; font-weight: 600; color: #1f2430; }
+    .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.2s; }
+    .btn-primary { background: #2f6dff; color: #fff; }
+    .btn-primary:hover { background: #1a5ae0; }
+    .btn-danger { background: #ff4d4f; color: #fff; }
+    .btn-danger:hover { background: #d9363e; }
+    .btn-sm { padding: 6px 12px; font-size: 13px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+    th { background: #f8f9fa; font-weight: 600; color: #666; }
+    tr:hover { background: #f8f9fa; }
+    .status { padding: 4px 10px; border-radius: 4px; font-size: 12px; }
+    .status-published { background: #e6f7e6; color: #52c41a; }
+    .status-draft { background: #fff7e6; color: #faad14; }
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; }
+    .modal.show { display: flex; align-items: center; justify-content: center; }
+    .modal-content { background: #fff; border-radius: 12px; padding: 24px; width: 500px; max-width: 90%; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .modal-title { font-size: 18px; font-weight: 600; }
+    .modal-close { background: none; border: none; font-size: 24px; cursor: pointer; color: #999; }
+    .form-group { margin-bottom: 15px; }
+    .form-label { display: block; margin-bottom: 6px; font-size: 14px; color: #666; }
+    .form-input { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
+    .form-input:focus { outline: none; border-color: #2f6dff; }
+    textarea.form-input { min-height: 100px; resize: vertical; }
+    .form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+    .empty { text-align: center; padding: 40px; color: #999; }
+    .actions { display: flex; gap: 8px; }
+  </style>
+</head>
+<body>
+  <!-- 登录页 -->
+  <div id="login-page" class="login-page">
+    <div class="login-box">
+      <div class="login-logo">
+        <h2>陵水数投数字经济供应链</h2>
+        <p>管理后台登录</p>
+      </div>
+      <form class="login-form" id="login-form">
+        <div class="form-group">
+          <label class="form-label">手机号</label>
+          <input type="text" class="form-input" id="login-phone" placeholder="请输入管理员手机号" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">密码</label>
+          <input type="password" class="form-input" id="login-password" placeholder="请输入密码" required>
+        </div>
+        <button type="submit" class="login-btn">登 录</button>
+        <div class="login-error" id="login-error">手机号或密码错误</div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 主页面 -->
+  <div id="main-page" class="main-page">
+    <!-- 左侧边栏 -->
+    <div class="sidebar">
+      <div class="sidebar-logo">
+        <h2>陵水数投</h2>
+        <p>数字经济供应链</p>
+      </div>
+      <div class="sidebar-menu">
+        <div class="menu-item active" onclick="switchMenu('banners', this)">
+          <span class="menu-icon">📷</span>
+          <span class="menu-text">轮播图管理</span>
+        </div>
+        <div class="menu-item" onclick="switchMenu('announcements', this)">
+          <span class="menu-icon">📢</span>
+          <span class="menu-text">公告管理</span>
+        </div>
+        <div class="menu-item" onclick="switchMenu('tasks', this)">
+          <span class="menu-icon">📋</span>
+          <span class="menu-text">任务管理</span>
+        </div>
+        <div class="menu-item" onclick="switchMenu('myTasks', this)">
+          <span class="menu-icon">📊</span>
+          <span class="menu-text">我发的单</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 右侧内容区 -->
+    <div class="main-content">
+      <div class="header">
+        <div class="header-left">
+          <h1 id="page-title">轮播图管理</h1>
+        </div>
+        <div class="header-right">
+          <span class="user-info">👤 <span id="admin-name">管理员</span></span>
+          <button class="logout-btn" onclick="logout()">退出登录</button>
+        </div>
+      </div>
+      
+      <div class="content-area">
+        <!-- 轮播图管理 -->
+        <div id="banners-section" class="card">
+      <div class="card-header">
+        <div class="card-title">轮播图列表</div>
+        <button class="btn btn-primary" onclick="openBannerModal()">+ 新增轮播图</button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>标题</th>
+            <th>描述</th>
+            <th>状态</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="banners-list"></tbody>
+      </table>
+    </div>
+    
+    <!-- 公告管理 -->
+    <div id="announcements-section" class="card" style="display:none;">
+      <div class="card-header">
+        <div class="card-title">公告列表</div>
+        <button class="btn btn-primary" onclick="openAnnouncementModal()">+ 新增公告</button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>标题</th>
+            <th>内容</th>
+            <th>状态</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="announcements-list"></tbody>
+      </table>
+    </div>
+    
+    <!-- 任务管理 -->
+    <div id="tasks-section" class="card" style="display:none;">
+      <div class="card-header">
+        <div class="card-title">任务列表</div>
+        <button class="btn btn-primary" onclick="openTaskModal()">+ 新建任务</button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>标题</th>
+            <th>类型</th>
+            <th>价格</th>
+            <th>位置</th>
+            <th>状态</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="tasks-list"></tbody>
+      </table>
+    </div>
+    
+    <!-- 我发的单管理 -->
+    <div id="myTasks-section" class="card" style="display:none;">
+      <div class="card-header">
+        <div class="card-title">我发的单 - 接单统计</div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>任务标题</th>
+            <th>类型</th>
+            <th>需求人数</th>
+            <th>接单人数</th>
+            <th>待审核</th>
+            <th>已通过</th>
+            <th>状态</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="myTasks-list"></tbody>
+      </table>
+    </div>
+  </div>
+  
+  <!-- 轮播图弹窗 -->
+  <div id="banner-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title" id="banner-modal-title">新增轮播图</div>
+        <button class="modal-close" onclick="closeBannerModal()">&times;</button>
+      </div>
+      <form id="banner-form">
+        <input type="hidden" id="banner-id">
+        <div class="form-group">
+          <label class="form-label">标题</label>
+          <input type="text" class="form-input" id="banner-title" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">描述</label>
+          <input type="text" class="form-input" id="banner-desc">
+        </div>
+        <div class="form-group">
+          <label class="form-label">轮播图片</label>
+          <div class="upload-area" id="upload-area" onclick="document.getElementById('banner-file').click()">
+            <input type="file" id="banner-file" accept="image/*" style="display:none" onchange="uploadImage(this)">
+            <img id="banner-preview" src="" style="display:none; max-width:100%; max-height:150px; border-radius:6px;">
+            <div id="upload-placeholder">
+              <div style="font-size:32px; color:#999;">📷</div>
+              <div style="color:#999; font-size:13px; margin-top:8px;">点击上传图片</div>
+            </div>
+          </div>
+          <input type="hidden" id="banner-image">
+        </div>
+        <div class="form-group">
+          <label class="form-label">跳转链接</label>
+          <input type="text" class="form-input" id="banner-link" placeholder="可选">
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn" onclick="closeBannerModal()">取消</button>
+          <button type="submit" class="btn btn-primary">保存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <!-- 公告弹窗 -->
+  <div id="announcement-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title" id="announcement-modal-title">新增公告</div>
+        <button class="modal-close" onclick="closeAnnouncementModal()">&times;</button>
+      </div>
+      <form id="announcement-form">
+        <input type="hidden" id="announcement-id">
+        <div class="form-group">
+          <label class="form-label">标题</label>
+          <input type="text" class="form-input" id="announcement-title" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">内容</label>
+          <textarea class="form-input" id="announcement-content" required></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn" onclick="closeAnnouncementModal()">取消</button>
+          <button type="submit" class="btn btn-primary">保存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <!-- 任务弹窗 -->
+  <div id="task-modal" class="modal">
+    <div class="modal-content" style="width:600px;">
+      <div class="modal-header">
+        <div class="modal-title" id="task-modal-title">新建任务</div>
+        <button class="modal-close" onclick="closeTaskModal()">&times;</button>
+      </div>
+      <form id="task-form">
+        <input type="hidden" id="task-id">
+        <div style="display:flex;gap:15px;">
+          <div class="form-group" style="flex:1;">
+            <label class="form-label">任务标题</label>
+            <input type="text" class="form-input" id="task-title" required>
+          </div>
+          <div class="form-group" style="width:120px;">
+            <label class="form-label">任务类型</label>
+            <select class="form-input" id="task-type">
+              <option value="daily">日结单</option>
+              <option value="bounty">赏金单</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">任务描述</label>
+          <textarea class="form-input" id="task-desc" style="min-height:60px;"></textarea>
+        </div>
+        <div style="display:flex;gap:15px;">
+          <div class="form-group" style="flex:1;">
+            <label class="form-label">单价</label>
+            <input type="number" class="form-input" id="task-price" value="10" min="0">
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label class="form-label">单位</label>
+            <input type="text" class="form-input" id="task-unit" value="元/单">
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label class="form-label">需求人数</label>
+            <input type="number" class="form-input" id="task-people" value="10" min="1">
+          </div>
+        </div>
+        <div style="display:flex;gap:15px;">
+          <div class="form-group" style="flex:1;">
+            <label class="form-label">工作位置</label>
+            <select class="form-input" id="task-location">
+              <option value="线上">线上</option>
+              <option value="线下">线下</option>
+            </select>
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label class="form-label">标签</label>
+            <input type="text" class="form-input" id="task-tag" placeholder="如：热门、精选">
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label class="form-label">状态</label>
+            <select class="form-input" id="task-status">
+              <option value="open">开放接单</option>
+              <option value="closed">已关闭</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:flex;gap:15px;">
+          <div class="form-group" style="flex:1;">
+            <label class="form-label">工作日期</label>
+            <input type="text" class="form-input" id="task-date" placeholder="如：今日结算、2025-12-15">
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label class="form-label">工作时间</label>
+            <input type="text" class="form-input" id="task-period" placeholder="如：09:00-18:00">
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn" onclick="closeTaskModal()">取消</button>
+          <button type="submit" class="btn btn-primary">保存</button>
+        </div>
+      </form>
+    </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = '/api';
+    
+    // ========== 登录相关 ==========
+    function checkLogin() {
+      const token = localStorage.getItem('admin_token');
+      const user = localStorage.getItem('admin_user');
+      if (token && user) {
+        document.getElementById('login-page').classList.add('hide');
+        document.getElementById('main-page').classList.add('show');
+        document.getElementById('admin-name').textContent = JSON.parse(user).nickname;
+        loadBanners();
+        loadAnnouncements();
+      }
+    }
+    
+    document.getElementById('login-form').onsubmit = async (e) => {
+      e.preventDefault();
+      const phone = document.getElementById('login-phone').value;
+      const password = document.getElementById('login-password').value;
+      
+      try {
+        const res = await fetch(API_BASE + '/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone, password })
+        }).then(r => r.json());
+        
+        if (res.code === 0 && res.data.user.role === '管理员') {
+          localStorage.setItem('admin_token', res.data.token);
+          localStorage.setItem('admin_user', JSON.stringify(res.data.user));
+          document.getElementById('login-error').style.display = 'none';
+          checkLogin();
+        } else if (res.code === 0) {
+          document.getElementById('login-error').textContent = '该账号没有管理员权限';
+          document.getElementById('login-error').style.display = 'block';
+        } else {
+          document.getElementById('login-error').textContent = res.message || '登录失败';
+          document.getElementById('login-error').style.display = 'block';
+        }
+      } catch (err) {
+        document.getElementById('login-error').textContent = '网络错误，请稍后重试';
+        document.getElementById('login-error').style.display = 'block';
+      }
+    };
+    
+    function logout() {
+      localStorage.removeItem('admin_token');
+      localStorage.removeItem('admin_user');
+      document.getElementById('login-page').classList.remove('hide');
+      document.getElementById('main-page').classList.remove('show');
+      document.getElementById('login-phone').value = '';
+      document.getElementById('login-password').value = '';
+    }
+    
+    // 切换菜单
+    function switchMenu(menu, el) {
+      document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById('banners-section').style.display = menu === 'banners' ? 'block' : 'none';
+      document.getElementById('announcements-section').style.display = menu === 'announcements' ? 'block' : 'none';
+      document.getElementById('tasks-section').style.display = menu === 'tasks' ? 'block' : 'none';
+      document.getElementById('myTasks-section').style.display = menu === 'myTasks' ? 'block' : 'none';
+      const titles = { banners: '轮播图管理', announcements: '公告管理', tasks: '任务管理', myTasks: '我发的单' };
+      document.getElementById('page-title').textContent = titles[menu] || '';
+      if (menu === 'tasks') loadTasks();
+      if (menu === 'myTasks') loadMyTasks();
+    }
+    
+    // ========== 图片上传 ==========
+    async function uploadImage(input) {
+      if (!input.files || !input.files[0]) return;
+      const formData = new FormData();
+      formData.append('file', input.files[0]);
+      try {
+        const res = await fetch(API_BASE + '/upload', { method: 'POST', body: formData }).then(r => r.json());
+        if (res.code === 0) {
+          document.getElementById('banner-image').value = res.data.url;
+          document.getElementById('banner-preview').src = res.data.url;
+          document.getElementById('banner-preview').style.display = 'block';
+          document.getElementById('upload-placeholder').style.display = 'none';
+        } else {
+          alert(res.message || '上传失败');
+        }
+      } catch (err) {
+        alert('上传失败，请重试');
+      }
+    }
+    
+    // ========== 轮播图 ==========
+    async function loadBanners() {
+      const res = await fetch(API_BASE + '/banners').then(r => r.json());
+      const list = document.getElementById('banners-list');
+      if (res.code === 0 && res.data.length > 0) {
+        list.innerHTML = res.data.map(item => `
+          <tr>
+            <td>${item.title}</td>
+            <td>${item.desc || '-'}</td>
+            <td><span class="status status-${item.status}">${item.status === 'published' ? '已发布' : '草稿'}</span></td>
+            <td class="actions">
+              <button class="btn btn-sm" onclick="editBanner('${item.id}')">编辑</button>
+              <button class="btn btn-sm btn-danger" onclick="deleteBanner('${item.id}')">删除</button>
+            </td>
+          </tr>
+        `).join('');
+      } else {
+        list.innerHTML = '<tr><td colspan="4" class="empty">暂无轮播图</td></tr>';
+      }
+    }
+    
+    let bannersCache = [];
+    async function loadBannersCache() {
+      const res = await fetch(API_BASE + '/banners').then(r => r.json());
+      bannersCache = res.code === 0 ? res.data : [];
+    }
+    
+    function openBannerModal(data = null) {
+      document.getElementById('banner-modal-title').textContent = data ? '编辑轮播图' : '新增轮播图';
+      document.getElementById('banner-id').value = data?.id || '';
+      document.getElementById('banner-title').value = data?.title || '';
+      document.getElementById('banner-desc').value = data?.desc || '';
+      document.getElementById('banner-image').value = data?.imageUrl || '';
+      document.getElementById('banner-link').value = data?.link || '';
+      document.getElementById('banner-file').value = '';
+      // 显示/隐藏图片预览
+      if (data?.imageUrl) {
+        document.getElementById('banner-preview').src = data.imageUrl;
+        document.getElementById('banner-preview').style.display = 'block';
+        document.getElementById('upload-placeholder').style.display = 'none';
+      } else {
+        document.getElementById('banner-preview').style.display = 'none';
+        document.getElementById('upload-placeholder').style.display = 'flex';
+      }
+      document.getElementById('banner-modal').classList.add('show');
+    }
+    
+    function closeBannerModal() {
+      document.getElementById('banner-modal').classList.remove('show');
+    }
+    
+    async function editBanner(id) {
+      await loadBannersCache();
+      const item = bannersCache.find(b => b.id === id);
+      if (item) openBannerModal(item);
+    }
+    
+    async function deleteBanner(id) {
+      if (!confirm('确定要删除这个轮播图吗？')) return;
+      await fetch(API_BASE + '/banners/' + id, { method: 'DELETE' });
+      loadBanners();
+    }
+    
+    document.getElementById('banner-form').onsubmit = async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('banner-id').value;
+      const data = {
+        title: document.getElementById('banner-title').value,
+        desc: document.getElementById('banner-desc').value,
+        imageUrl: document.getElementById('banner-image').value,
+        link: document.getElementById('banner-link').value,
+        status: 'published'
+      };
+      if (id) {
+        await fetch(API_BASE + '/banners/' + id, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+      } else {
+        await fetch(API_BASE + '/banners', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+      }
+      closeBannerModal();
+      loadBanners();
+    };
+    
+    // ========== 公告 ==========
+    async function loadAnnouncements() {
+      const res = await fetch(API_BASE + '/announcements').then(r => r.json());
+      const list = document.getElementById('announcements-list');
+      if (res.code === 0 && res.data.length > 0) {
+        list.innerHTML = res.data.map(item => `
+          <tr>
+            <td>${item.title}</td>
+            <td>${(item.content || '').substring(0, 30)}${item.content?.length > 30 ? '...' : ''}</td>
+            <td><span class="status status-${item.status}">${item.status === 'published' ? '已发布' : '草稿'}</span></td>
+            <td class="actions">
+              <button class="btn btn-sm" onclick="editAnnouncement('${item.id}')">编辑</button>
+              <button class="btn btn-sm btn-danger" onclick="deleteAnnouncement('${item.id}')">删除</button>
+            </td>
+          </tr>
+        `).join('');
+      } else {
+        list.innerHTML = '<tr><td colspan="4" class="empty">暂无公告</td></tr>';
+      }
+    }
+    
+    let announcementsCache = [];
+    async function loadAnnouncementsCache() {
+      const res = await fetch(API_BASE + '/announcements').then(r => r.json());
+      announcementsCache = res.code === 0 ? res.data : [];
+    }
+    
+    function openAnnouncementModal(data = null) {
+      document.getElementById('announcement-modal-title').textContent = data ? '编辑公告' : '新增公告';
+      document.getElementById('announcement-id').value = data?.id || '';
+      document.getElementById('announcement-title').value = data?.title || '';
+      document.getElementById('announcement-content').value = data?.content || '';
+      document.getElementById('announcement-modal').classList.add('show');
+    }
+    
+    function closeAnnouncementModal() {
+      document.getElementById('announcement-modal').classList.remove('show');
+    }
+    
+    async function editAnnouncement(id) {
+      await loadAnnouncementsCache();
+      const item = announcementsCache.find(a => a.id === id);
+      if (item) openAnnouncementModal(item);
+    }
+    
+    async function deleteAnnouncement(id) {
+      if (!confirm('确定要删除这个公告吗？')) return;
+      await fetch(API_BASE + '/announcements/' + id, { method: 'DELETE' });
+      loadAnnouncements();
+    }
+    
+    document.getElementById('announcement-form').onsubmit = async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('announcement-id').value;
+      const data = {
+        title: document.getElementById('announcement-title').value,
+        content: document.getElementById('announcement-content').value,
+        status: 'published'
+      };
+      if (id) {
+        await fetch(API_BASE + '/announcements/' + id, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+      } else {
+        await fetch(API_BASE + '/announcements', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+      }
+      closeAnnouncementModal();
+      loadAnnouncements();
+    };
+    
+    // ========== 任务 ==========
+    async function loadTasks() {
+      const res = await fetch(API_BASE + '/tasks').then(r => r.json());
+      const list = document.getElementById('tasks-list');
+      if (res.code === 0 && res.data.length > 0) {
+        list.innerHTML = res.data.map(item => `
+          <tr>
+            <td>${item.title}</td>
+            <td>${item.type === 'daily' ? '日结单' : '赏金单'}</td>
+            <td>¥${item.price}${item.unit ? '/' + item.unit.replace('元/', '') : ''}</td>
+            <td>${item.location || '线上'}</td>
+            <td><span class="status ${item.status === 'open' ? 'status-published' : 'status-draft'}">${item.status === 'open' ? '开放' : '关闭'}</span></td>
+            <td class="actions">
+              <button class="btn btn-sm" onclick="editTask('${item.id}')">编辑</button>
+              <button class="btn btn-sm btn-danger" onclick="deleteTask('${item.id}')">删除</button>
+            </td>
+          </tr>
+        `).join('');
+      } else {
+        list.innerHTML = '<tr><td colspan="6" class="empty">暂无任务</td></tr>';
+      }
+    }
+    
+    let tasksCache = [];
+    async function loadTasksCache() {
+      const res = await fetch(API_BASE + '/tasks').then(r => r.json());
+      tasksCache = res.code === 0 ? res.data : [];
+    }
+    
+    function openTaskModal(data = null) {
+      document.getElementById('task-modal-title').textContent = data ? '编辑任务' : '新建任务';
+      document.getElementById('task-id').value = data?.id || '';
+      document.getElementById('task-title').value = data?.title || '';
+      document.getElementById('task-desc').value = data?.desc || '';
+      document.getElementById('task-type').value = data?.type || 'daily';
+      document.getElementById('task-price').value = data?.price || 10;
+      document.getElementById('task-unit').value = data?.unit || '元/单';
+      document.getElementById('task-people').value = data?.peopleNeeded || 10;
+      document.getElementById('task-location').value = data?.location || '线上';
+      document.getElementById('task-tag').value = data?.tag || '';
+      document.getElementById('task-status').value = data?.status || 'open';
+      document.getElementById('task-date').value = data?.date || '';
+      document.getElementById('task-period').value = data?.period || '';
+      document.getElementById('task-modal').classList.add('show');
+    }
+    
+    function closeTaskModal() {
+      document.getElementById('task-modal').classList.remove('show');
+    }
+    
+    async function editTask(id) {
+      await loadTasksCache();
+      const item = tasksCache.find(t => t.id === id);
+      if (item) openTaskModal(item);
+    }
+    
+    async function deleteTask(id) {
+      if (!confirm('确定要删除这个任务吗？')) return;
+      await fetch(API_BASE + '/tasks/' + id, { method: 'DELETE' });
+      loadTasks();
+    }
+    
+    document.getElementById('task-form').onsubmit = async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('task-id').value;
+      const adminUser = JSON.parse(localStorage.getItem('admin_user') || '{}');
+      const data = {
+        title: document.getElementById('task-title').value,
+        desc: document.getElementById('task-desc').value,
+        type: document.getElementById('task-type').value,
+        price: parseFloat(document.getElementById('task-price').value) || 0,
+        unit: document.getElementById('task-unit').value,
+        peopleNeeded: parseInt(document.getElementById('task-people').value) || 10,
+        location: document.getElementById('task-location').value,
+        tag: document.getElementById('task-tag').value,
+        status: document.getElementById('task-status').value,
+        date: document.getElementById('task-date').value,
+        period: document.getElementById('task-period').value,
+        publisher: adminUser.nickname || '管理员',
+        publisherId: adminUser.id || null
+      };
+      if (id) {
+        await fetch(API_BASE + '/tasks/' + id, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+      } else {
+        await fetch(API_BASE + '/tasks', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+      }
+      closeTaskModal();
+      loadTasks();
+    };
+    
+    // ========== 我发的单管理 ==========
+    async function loadMyTasks() {
+      const res = await fetch(API_BASE + '/tasks/published/stats').then(r => r.json());
+      const list = document.getElementById('myTasks-list');
+      if (res.code === 0 && res.data.length > 0) {
+        list.innerHTML = res.data.map(item => `
+          <tr>
+            <td>${item.title}</td>
+            <td>${item.type === 'daily' ? '日结单' : '赏金单'}</td>
+            <td>${item.peopleNeeded}</td>
+            <td><strong>${item.orderCount}</strong></td>
+            <td><span style="color:#fa8c16;">${item.submittedCount}</span></td>
+            <td><span style="color:#52c41a;">${item.approvedCount}</span></td>
+            <td><span class="status ${item.status === 'open' ? 'status-published' : 'status-draft'}">${item.status === 'open' ? '进行中' : '已结束'}</span></td>
+            <td class="actions">
+              <button class="btn btn-sm" onclick="viewOrders('${item.id}', '${item.title}')">查看接单</button>
+              ${item.status === 'open' ? `<button class="btn btn-sm btn-danger" onclick="closeTask('${item.id}')">结束</button>` : ''}
+            </td>
+          </tr>
+        `).join('');
+      } else {
+        list.innerHTML = '<tr><td colspan="8" class="empty">暂无发布的任务</td></tr>';
+      }
+    }
+    
+    async function closeTask(id) {
+      if (!confirm('确定要结束这个任务吗？结束后将不再接受新的接单。')) return;
+      await fetch(API_BASE + '/tasks/' + id + '/close', { method: 'PATCH' });
+      loadMyTasks();
+    }
+    
+    async function viewOrders(taskId, taskTitle) {
+      const res = await fetch(API_BASE + '/tasks/' + taskId + '/orders').then(r => r.json());
+      if (res.code === 0) {
+        let html = `<h3 style="margin-bottom:15px;">【${taskTitle}】接单详情</h3>`;
+        if (res.data.length > 0) {
+          html += '<table style="width:100%;"><thead><tr><th>用户</th><th>状态</th><th>接单时间</th><th>操作</th></tr></thead><tbody>';
+          html += res.data.map(o => `
+            <tr>
+              <td>${o.userName || o.userId}</td>
+              <td><span class="status ${o.status === 'approved' ? 'status-published' : o.status === 'rejected' ? 'status-draft' : ''}">${getOrderStatusText(o.status)}</span></td>
+              <td>${o.createdAt ? new Date(o.createdAt).toLocaleString() : '-'}</td>
+              <td class="actions">
+                ${o.status === 'submitted' ? `
+                  <button class="btn btn-sm btn-primary" onclick="reviewOrder('${o.id}', 'approved')">通过</button>
+                  <button class="btn btn-sm btn-danger" onclick="reviewOrder('${o.id}', 'rejected')">拒绝</button>
+                ` : '-'}
+              </td>
+            </tr>
+          `).join('');
+          html += '</tbody></table>';
+        } else {
+          html += '<p style="color:#999;text-align:center;padding:30px;">暂无接单记录</p>';
+        }
+        showOrdersModal(html);
+      }
+    }
+    
+    function getOrderStatusText(status) {
+      const map = { pending: '进行中', submitted: '待审核', approved: '已通过', rejected: '已拒绝' };
+      return map[status] || status;
+    }
+    
+    async function reviewOrder(orderId, status) {
+      await fetch(API_BASE + '/orders/' + orderId + '/review', {
+        method: 'PATCH',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ status })
+      });
+      document.getElementById('orders-modal').classList.remove('show');
+      loadMyTasks();
+      alert(status === 'approved' ? '已通过审核' : '已拒绝');
+    }
+    
+    function showOrdersModal(html) {
+      let modal = document.getElementById('orders-modal');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'orders-modal';
+        modal.className = 'modal';
+        modal.innerHTML = `<div class="modal-content" style="width:700px;max-height:80vh;overflow-y:auto;">
+          <div class="modal-header">
+            <div class="modal-title">接单详情</div>
+            <button class="modal-close" onclick="document.getElementById('orders-modal').classList.remove('show')">&times;</button>
+          </div>
+          <div id="orders-content"></div>
+        </div>`;
+        document.body.appendChild(modal);
+      }
+      document.getElementById('orders-content').innerHTML = html;
+      modal.classList.add('show');
+    }
+    
+    // 初始化 - 检查登录状态
+    checkLogin();
+  </script>
+</body>
+</html>

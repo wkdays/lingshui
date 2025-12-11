@@ -1,0 +1,16 @@
+node_modules/
+unpackage/
+.DS_Store
+*.log
+.idea/
+.vscode/
+*.local
+.env
+.env.*
+dist/
+*.map
+package-lock.json
+thumbs.db
+*.swp
+*.swo
+node_modules

@@ -1,0 +1,153 @@
+{
+	"pages": [
+		{
+			"path": "pages/index/index",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/publish/index",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "发布任务"
+			}
+		},
+		{
+			"path": "pages/mine/index",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "我的"
+			}
+		},
+		{
+			"path": "pages/chat/index",
+			"style": {
+				"navigationBarTitleText": "聊天"
+			}
+		},
+		{
+			"path": "pages/order/index",
+			"style": {
+				"navigationBarTitleText": "订单"
+			}
+		},
+		{
+			"path": "pages/auth/login",
+			"style": {
+				"navigationBarTitleText": "登录"
+			}
+		},
+		{
+			"path": "pages/auth/register",
+			"style": {
+				"navigationBarTitleText": "注册"
+			}
+		},
+		{
+			"path": "pages/task/detail",
+			"style": {
+				"navigationBarTitleText": "任务详情"
+			}
+		},
+		{
+			"path": "pages/task/create",
+			"style": {
+				"navigationBarTitleText": "发布任务"
+			}
+		},
+		{
+			"path": "pages/task/square",
+			"style": {
+				"navigationBarTitleText": "任务广场"
+			}
+		},
+		{
+			"path": "pages/task/my-published",
+			"style": {
+				"navigationBarTitleText": "我发的单"
+			}
+		},
+		{
+			"path": "pages/task/my-received",
+			"style": {
+				"navigationBarTitleText": "我接的单"
+			}
+		},
+		{
+			"path": "pages/task/history",
+			"style": {
+				"navigationBarTitleText": "任务记录"
+			}
+		},
+		{
+			"path": "pages/messages/index",
+			"style": {
+				"navigationBarTitleText": "消息中心"
+			}
+		},
+		{
+			"path": "pages/announcements/index",
+			"style": {
+				"navigationBarTitleText": "公告"
+			}
+		},
+		{
+			"path": "pages/wallet/recharge",
+			"style": {
+				"navigationBarTitleText": "余额充值"
+			}
+		},
+		{
+			"path": "pages/admin/banner-manage",
+			"style": {
+				"navigationBarTitleText": "轮播图管理"
+			}
+		},
+		{
+			"path": "pages/admin/announcement-manage",
+			"style": {
+				"navigationBarTitleText": "公告管理"
+			}
+		}
+	],
+	"tabBar": {
+		"color": "#7a7e83",
+		"selectedColor": "#2f6dff",
+		"backgroundColor": "#ffffff",
+		"borderStyle": "black",
+		"list": [
+			{
+				"pagePath": "pages/index/index",
+				"iconPath": "static/tab-home.png",
+				"selectedIconPath": "static/tab-home-active.png",
+				"text": "首页"
+			},
+			{
+				"pagePath": "pages/chat/index",
+				"iconPath": "static/tab-chat.png",
+				"selectedIconPath": "static/tab-chat-active.png",
+				"text": "聊天"
+			},
+			{
+				"pagePath": "pages/order/index",
+				"iconPath": "static/tab-order.png",
+				"selectedIconPath": "static/tab-order-active.png",
+				"text": "订单"
+			},
+			{
+				"pagePath": "pages/mine/index",
+				"iconPath": "static/tab-mine.png",
+				"selectedIconPath": "static/tab-mine-active.png",
+				"text": "我的"
+			}
+		]
+	},
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "陵水数投数字经济供应链",
+		"navigationBarBackgroundColor": "#F8F8F8",
+		"backgroundColor": "#F8F8F8"
+	},
+	"uniIdRouter": {}
+}
