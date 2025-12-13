@@ -1,0 +1,18 @@
+1.安装后端依赖: cd PortalServer && npm install
+2.配置数据库: 修改PortalServer/.env文件
+  - DB_HOST=localhost (数据库地址)
+  - DB_PORT=3306 (数据库端口)
+  - DB_USER=root (数据库用户名)
+  - DB_PASSWORD=123456 (数据库密码)
+  - DB_NAME=portal_db (数据库名)
+  - PORT=3001 (后端服务端口)
+  - JWT_SECRET=portal_secret_key_2025 (JWT密钥)
+3.启动后端服务: cd PortalServer && npm start
+
+4.安装管理后台依赖: cd PortalAdmin && npm install
+5.启动管理后台: cd PortalAdmin && npm run dev (默认端口5173)
+
+6.安装前台依赖: cd PortalHome && npm install
+7.启动前台: cd PortalHome && npm run dev (默认端口5174)
+
+8.默认管理员账号: admin 密码: admin
