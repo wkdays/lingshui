@@ -1,101 +1,135 @@
 <template>
   <div class="service-page">
-    <!-- 顶部大图Banner -->
-    <div class="page-banner">
-      <img src="/images/banner-digital-economy.jpg" alt="一站式服务" class="banner-img" />
-      <div class="banner-overlay">
-        <h1>一站式服务</h1>
-        <p>数字经济全流程服务平台</p>
-      </div>
+    <!-- 装饰图标 -->
+    <div class="decor-icons">
+      <svg class="decor-icon icon-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83"/>
+      </svg>
+      <svg class="decor-icon icon-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+      </svg>
+      <div class="decor-dot dot-1"></div>
+      <div class="decor-dot dot-2"></div>
+      <div class="decor-dot dot-3"></div>
+      <svg class="decor-icon icon-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
     </div>
 
-    <div class="main-content">
-      <!-- 左侧业务类型选择 -->
-      <div class="left-sidebar">
-        <!-- 对话列表头部 - Kimi风格 -->
-        <div class="chat-list-header">
-          <el-icon :size="18"><ChatLineRound /></el-icon>
-          <span>对话列表</span>
-        </div>
+    <!-- 右侧倾斜背景 -->
+    <div class="slant-bg"></div>
+
+    <!-- 主内容区域 -->
+    <div class="hero-section">
+      <!-- 左侧内容 -->
+      <div class="hero-left">
+        <h1 class="hero-title">数字文化出海一站式服务平台</h1>
+        <p class="hero-desc">
+          助力企业数字化转型，提供全方位数字文化出海服务。集数智化项目开发、数据资产运营、无人机技术服务于一体，打造自贸港数字样板间。
+        </p>
         
-        <div 
-          v-for="biz in businessTypes" 
-          :key="biz.key"
-          class="biz-tab-item"
-          :class="{ active: activeBusiness === biz.key }"
-          @click="selectBusiness(biz)"
-        >
-          <el-icon :size="20" class="biz-icon"><component :is="biz.icon" /></el-icon>
-          <span class="biz-name">{{ biz.name }}</span>
+        <div class="hero-buttons">
+          <button class="btn-primary" @click="goToChat">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            智能咨询
+          </button>
+          <button class="btn-outline" @click="goToChat">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10"/>
+            </svg>
+            出海服务
+          </button>
+        </div>
+
+        <!-- 特性标签 -->
+        <div class="feature-tags">
+          <span class="tag">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+            数智化项目开发
+          </span>
+          <span class="tag">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+            数据资产运营
+          </span>
+          <span class="tag">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+            无人机技术服务
+          </span>
+          <span class="tag">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+            数字文化出海
+          </span>
         </div>
       </div>
 
-      <!-- 右侧主要内容区 -->
-      <div class="right-content">
-        <!-- 平台标题 -->
-        <div class="platform-header">
-          <h1>数字文化出海一站式服务平台</h1>
-        </div>
-
-        <!-- 流程图区域 -->
-        <div class="flow-section">
-          <!-- 左侧阶段按钮 -->
-          <div class="stage-buttons">
-            <div 
-              v-for="stage in stages" 
-              :key="stage.key"
-              class="stage-btn"
-              :class="{ active: activeStage === stage.key }"
-              @click="selectStage(stage)"
-            >
-              <el-icon :size="16"><component :is="stage.icon" /></el-icon>
-              <span>{{ stage.name }}</span>
-            </div>
-          </div>
-
-          <!-- 箭头 -->
-          <div class="flow-arrow">
-            <el-icon :size="24"><Right /></el-icon>
-          </div>
-
-          <!-- 服务流程卡片 -->
-          <div class="service-flow">
-            <div class="flow-card" v-for="flow in serviceFlows" :key="flow.key">
-              <div class="flow-icon">
-                <el-icon :size="28"><component :is="flow.icon" /></el-icon>
+      <!-- 右侧展示图 -->
+      <div class="hero-right">
+        <div class="framework-card">
+          <div class="framework-title">陵水数投发展框架</div>
+          <div class="framework-grid">
+            <div class="framework-item">
+              <div class="item-title">数智化项目开发</div>
+              <div class="item-content">
+                <span>产业数据赋能</span>
+                <span>公共数据汇聚</span>
+                <span>城市一张网</span>
+                <span>档案电子化</span>
               </div>
-              <div class="flow-title">{{ flow.title }}</div>
-              <div class="flow-desc">{{ flow.desc }}</div>
             </div>
-            <!-- 最后一个箭头指向业务 -->
-            <div class="final-arrow">
-              <el-icon :size="32"><Right /></el-icon>
-            </div>
-            <div class="flow-card business-card">
-              <div class="flow-icon">
-                <el-icon :size="28"><TrendCharts /></el-icon>
+            <div class="framework-item">
+              <div class="item-title">数字文化出海服务</div>
+              <div class="item-content">
+                <span>跨境来数加工</span>
+                <span>数字文化产业云</span>
+                <span>国际数字内容平台</span>
+                <span>海缆登陆站</span>
               </div>
-              <div class="flow-title">业务</div>
-              <div class="flow-desc">数字游戏、短视频影视、<br/>跨境电商、数字文创</div>
+            </div>
+            <div class="framework-item">
+              <div class="item-title">数据资产运营</div>
+              <div class="item-content">
+                <span>智能硬件场景</span>
+                <span>数据标注服务</span>
+                <span>数字经济一体化</span>
+                <span>服务支撑体系</span>
+              </div>
+            </div>
+            <div class="framework-item">
+              <div class="item-title">无人机技术服务</div>
+              <div class="item-content">
+                <span>场景化专业服务</span>
+                <span>低空经济一网统飞</span>
+                <span>低空经济数字基建</span>
+                <span>航空数据服务</span>
+              </div>
             </div>
           </div>
+          <div class="framework-slogan">
+            <span>应用场景赋能者</span>
+            <span class="divider">·</span>
+            <span>建设自贸港数字样板间</span>
+            <span class="divider">·</span>
+            <span>挖掘数据资源金矿</span>
+          </div>
         </div>
-
-        <!-- 底部标语 -->
-        <div class="platform-slogan">
-          <p>集检索、生成、审阅、合规落地与一体的"全生命周期只能申报服务闭环"服务平台</p>
-        </div>
-
       </div>
     </div>
 
-    <!-- 统计数据 - 底部横跨全宽 -->
-    <div class="stats-wrapper">
-      <div class="stats-section">
-        <div class="stat-item" v-for="stat in statistics" :key="stat.label">
-          <div class="stat-value">{{ stat.value }}</div>
-          <div class="stat-label">{{ stat.label }}</div>
-        </div>
+    <!-- 底部统计数据 -->
+    <div class="stats-section">
+      <div class="stat-item" v-for="(stat, index) in statistics" :key="stat.label">
+        <div class="stat-value">{{ stat.value }}</div>
+        <div class="stat-label">{{ stat.label }}</div>
       </div>
     </div>
   </div>
@@ -104,388 +138,370 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { Right, Picture, Van, VideoCamera, ShoppingCart, Monitor, User, Coin, TrendCharts, ChatLineRound, Edit, Search } from '@element-plus/icons-vue'
 
 const router = useRouter()
-const activeStage = ref('consult')
-const activeBusiness = ref('culture')
-
-const stages = [
-  { key: 'consult', name: '事前咨询', icon: 'ChatLineRound' },
-  { key: 'apply', name: '事中申报', icon: 'Edit' },
-  { key: 'review', name: '事后复查', icon: 'Search' }
-]
-
-const businessTypes = [
-  { key: 'culture', name: '数字文创', icon: 'Picture' },
-  { key: 'logistics', name: '数字物流', icon: 'Van' },
-  { key: 'media', name: '影视短剧', icon: 'VideoCamera' },
-  { key: 'crossborder', name: '跨境电商', icon: 'ShoppingCart' }
-]
-
-const serviceFlows = [
-  { key: 'gov', title: '政务', desc: '国内一网通办', icon: 'Monitor' },
-  { key: 'law', title: '法务', desc: '国外全球经营', icon: 'User' },
-  { key: 'finance', title: '财务', desc: 'xxxxxxx', icon: 'Coin' }
-]
 
 const statistics = [
   { value: '1612', label: '服务企业数' },
-  { value: '2185', label: '回答准确率' },
+  { value: '85%', label: '回答准确率' },
   { value: '72', label: '知识库存量' },
-  { value: '90', label: '关键达标率' }
+  { value: '90%', label: '关键达标率' }
 ]
-
-const selectBusiness = (biz) => {
-  activeBusiness.value = biz.key
-  goToChat()
-}
-
-const selectStage = (stage) => {
-  activeStage.value = stage.key
-  goToChat()
-}
 
 const goToChat = () => {
   router.push({
     path: '/ai-chat',
-    query: {
-      category: activeBusiness.value,
-      stage: activeStage.value
-    }
+    query: { category: 'culture' }
   })
 }
 </script>
 
 <style lang="scss" scoped>
+$primary: #2A446E;
+$secondary: #3E87C7;
+$accent: #9EB7CC;
+
 .service-page {
-  min-height: calc(100vh - 70px);
-  background: #fff;
-}
-
-.page-banner {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8fafc 0%, #f0f4f8 100%);
   position: relative;
-  width: 100%;
-  height: 600px;
   overflow: hidden;
+  padding-top: 80px;
+}
+
+// 装饰图标
+.decor-icons {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.decor-icon {
+  position: absolute;
+  opacity: 0.6;
+  animation: float 4s ease-in-out infinite;
   
-  .banner-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+  &.icon-1 {
+    width: 40px;
+    height: 40px;
+    top: 150px;
+    left: 8%;
+    color: $secondary;
+    animation-delay: 0s;
   }
   
-  .banner-overlay {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 60px;
-    background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
-    text-align: center;
-    color: #fff;
+  &.icon-2 {
+    width: 28px;
+    height: 28px;
+    top: 200px;
+    left: 15%;
+    color: #f0a0a0;
+    animation-delay: 1s;
   }
   
-  h1 {
-    font-size: 42px;
-    font-weight: 500;
-    margin-bottom: 15px;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-  }
-  
-  p {
-    font-size: 18px;
-    opacity: 0.9;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  &.icon-3 {
+    width: 32px;
+    height: 32px;
+    top: 350px;
+    left: 5%;
+    color: $accent;
+    animation-delay: 2s;
   }
 }
 
-.main-content {
+.decor-dot {
+  position: absolute;
+  border-radius: 50%;
+  animation: pulse 3s ease-in-out infinite;
+  
+  &.dot-1 {
+    width: 12px;
+    height: 12px;
+    top: 180px;
+    left: 20%;
+    background: $secondary;
+    animation-delay: 0.5s;
+  }
+  
+  &.dot-2 {
+    width: 8px;
+    height: 8px;
+    top: 280px;
+    left: 12%;
+    background: #f0a0a0;
+    animation-delay: 1.5s;
+  }
+  
+  &.dot-3 {
+    width: 10px;
+    height: 10px;
+    top: 320px;
+    left: 18%;
+    background: $accent;
+    animation-delay: 2.5s;
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+// 右侧倾斜背景
+.slant-bg {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 55%;
+  height: 100%;
+  background: linear-gradient(135deg, $secondary 0%, $primary 100%);
+  clip-path: polygon(25% 0, 100% 0, 100% 100%, 0% 100%);
+  z-index: 0;
+}
+
+// 主内容区域
+.hero-section {
   display: flex;
-  gap: 50px;
+  align-items: center;
   max-width: 1400px;
   margin: 0 auto;
-  padding: 60px 40px;
-  min-height: 600px;
+  padding: 60px 60px 40px;
+  position: relative;
+  z-index: 2;
+  min-height: calc(100vh - 200px);
 }
 
-// 左侧业务类型选择 - 类似图2的简洁列表样式
-.left-sidebar {
-  width: 180px;
-  flex-shrink: 0;
-  padding: 12px;
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  align-self: stretch;
-  display: flex;
-  flex-direction: column;
-}
-
-// 对话列表头部 - Kimi风格
-.chat-list-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 14px 16px;
-  margin-bottom: 8px;
-  background: linear-gradient(135deg, rgba(62, 135, 199, 0.1), rgba(91, 163, 217, 0.06));
-  border-radius: 10px;
-  color: #3E87C7;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  
-  &:hover {
-    background: linear-gradient(135deg, rgba(62, 135, 199, 0.15), rgba(91, 163, 217, 0.1));
-  }
-}
-
-.biz-tab-item {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 20px 20px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border-radius: 12px;
-  margin-bottom: 4px;
-  
-  &:last-child {
-    margin-bottom: 0;
-  }
-  
-  .biz-icon {
-    color: #666;
-    transition: color 0.2s;
-  }
-  
-  .biz-name {
-    font-size: 16px;
-    color: #333;
-    font-weight: 500;
-  }
-  
-  &:hover {
-    background: #f5f7fa;
-    
-    .biz-icon, .biz-name {
-      color: #3E87C7;
-    }
-  }
-  
-  &.active {
-    background: linear-gradient(135deg, rgba(62, 135, 199, 0.12), rgba(91, 163, 217, 0.08));
-    
-    .biz-icon {
-      color: #3E87C7;
-    }
-    
-    .biz-name {
-      color: #3E87C7;
-      font-weight: 600;
-    }
-  }
-}
-
-// 右侧主要内容区
-.right-content {
+// 左侧内容
+.hero-left {
   flex: 1;
+  max-width: 550px;
+  padding-right: 40px;
+}
+
+.hero-title {
+  font-size: 36px;
+  font-weight: 700;
+  color: $primary;
+  line-height: 1.3;
+  margin: 0 0 24px;
+  white-space: nowrap;
+}
+
+.hero-desc {
+  font-size: 16px;
+  color: #666;
+  line-height: 1.8;
+  margin-bottom: 32px;
+}
+
+// 按钮组
+.hero-buttons {
   display: flex;
-  flex-direction: column;
-  gap: 24px;
+  gap: 16px;
+  margin-bottom: 40px;
 }
 
-// 平台标题
-.platform-header {
-  background: linear-gradient(135deg, #3E87C7, #5BA3D9);
-  border-radius: 12px;
-  padding: 24px 40px;
-  text-align: center;
-  
-  h1 {
-    color: #fff;
-    font-size: 28px;
-    font-weight: 600;
-    margin: 0;
-    letter-spacing: 2px;
-  }
-}
-
-// 流程图区域
-.flow-section {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  padding: 40px 30px;
-  background: #f8fafc;
-  border-radius: 12px;
-  min-height: 200px;
-}
-
-.stage-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  flex-shrink: 0;
-}
-
-.stage-btn {
+.btn-primary {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 12px 20px;
-  background: #fff;
-  border: 2px solid #e4e7ed;
-  border-radius: 25px;
+  padding: 14px 28px;
+  background: linear-gradient(135deg, $secondary, $primary);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.3s;
   
-  span {
-    font-size: 14px;
-    color: #666;
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba($primary, 0.3);
   }
   
-  .el-icon {
-    color: #3E87C7;
+  .btn-icon {
+    width: 18px;
+    height: 18px;
   }
+}
+
+.btn-outline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 28px;
+  background: #fff;
+  border: 2px solid $secondary;
+  border-radius: 8px;
+  color: $secondary;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
   
   &:hover {
-    border-color: #3E87C7;
-    background: rgba(62, 135, 199, 0.05);
+    background: rgba($secondary, 0.05);
+    transform: translateY(-2px);
   }
   
-  &.active {
-    background: #3E87C7;
-    border-color: #3E87C7;
+  .btn-icon {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+// 特性标签
+.feature-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.tag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: #fff;
+  border-radius: 20px;
+  font-size: 13px;
+  color: $primary;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  
+  svg {
+    width: 14px;
+    height: 14px;
+    color: $secondary;
+  }
+}
+
+// 右侧展示图
+.hero-right {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+// 框架卡片
+.framework-card {
+  max-width: 520px;
+  padding: 30px;
+}
+
+.framework-title {
+  text-align: center;
+  font-size: 28px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 32px;
+  letter-spacing: 3px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+// 四宫格布局
+.framework-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  margin-bottom: 28px;
+}
+
+.framework-item {
+  .item-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+  }
+  
+  .item-content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
     
-    span, .el-icon {
-      color: #fff;
+    span {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.9);
+      padding-left: 12px;
+      position: relative;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.15);
+      
+      &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 4px;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.6);
+        border-radius: 50%;
+      }
     }
   }
 }
 
-.flow-arrow {
-  color: #3E87C7;
-  display: flex;
-  align-items: center;
-}
-
-.service-flow {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: 1;
-  justify-content: center;
-}
-
-.flow-card {
-  background: linear-gradient(135deg, #3E87C7, #5BA3D9);
-  border-radius: 8px;
-  padding: 24px 28px;
+.framework-slogan {
   text-align: center;
-  min-width: 130px;
-  position: relative;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
   
-  &::after {
-    content: '';
-    position: absolute;
-    right: -20px;
-    top: 50%;
-    transform: translateY(-50%);
-    border: 10px solid transparent;
-    border-left-color: #5BA3D9;
+  span {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.8);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
   }
   
-  &:last-of-type::after {
-    display: none;
-  }
-  
-  .flow-icon {
-    color: #fff;
-    margin-bottom: 8px;
-  }
-  
-  .flow-title {
-    color: #fff;
-    font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 4px;
-  }
-  
-  .flow-desc {
-    color: rgba(255, 255, 255, 0.85);
-    font-size: 12px;
+  .divider {
+    margin: 0 10px;
+    color: rgba(255, 255, 255, 0.4);
   }
 }
 
-.final-arrow {
-  color: #3E87C7;
-  display: flex;
-  align-items: center;
-  padding: 0 10px;
-}
-
-.business-card {
-  background: linear-gradient(135deg, #2A446E, #3E87C7) !important;
-  clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 50%, calc(100% - 20px) 100%, 0 100%);
-  padding-right: 40px !important;
-  
-  &::after {
-    display: none !important;
-  }
-  
-  .flow-desc {
-    font-size: 11px;
-    line-height: 1.4;
-  }
-}
-
-// 底部标语
-.platform-slogan {
-  background: linear-gradient(135deg, #3E87C7, #2A446E);
-  border-radius: 8px;
-  padding: 16px 30px;
-  text-align: center;
-  
-  p {
-    color: #fff;
-    font-size: 15px;
-    margin: 0;
-    letter-spacing: 1px;
-  }
-}
-
-// 统计数据 - 底部全宽
-.stats-wrapper {
-  background: #fff;
-  border-top: 1px solid #e8e8e8;
-}
-
+// 底部统计数据
 .stats-section {
   display: flex;
-  justify-content: space-between;
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 50px 40px;
+  justify-content: center;
+  align-items: center;
+  gap: 200px;
+  padding: 50px 60px;
+  position: relative;
+  z-index: 2;
+  background: #fff;
 }
 
 .stat-item {
-  flex: 1;
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
   
   .stat-value {
-    font-size: 52px;
+    font-size: 48px;
     font-weight: 300;
-    color: #333;
+    color: $primary;
     line-height: 1;
-    margin-bottom: 14px;
+    margin-bottom: 12px;
   }
   
   .stat-label {
-    font-size: 15px;
-    color: #666;
+    font-size: 14px;
+    color: #888;
   }
 }
 </style>

@@ -30,6 +30,12 @@
   display: flex;
   align-items: center;
   margin-right: 50px;
+  height: 100%;
+}
+
+.top-nav .index img {
+  height: 32px;
+  width: auto;
 }
 
 .top-nav .index .icon_logo_home {
