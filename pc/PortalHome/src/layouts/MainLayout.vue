@@ -1,11 +1,13 @@
 <template>
   <div>
     <nav class="top-nav">
+      <div class="nav-logo-wrapper">
+        <img src="/images/全称渐变.png" alt="陵水数投" class="nav-logo" />
+      </div>
       <div class="link-container">
-        <router-link class="index" to="/" title="数字经济门户">
-          <span class="icon_logo_home" title="数字经济门户">数字经济</span>
+        <router-link class="index" to="/" title="陵水数投">
+          <span class="icon_logo_home">陵水数投</span>
         </router-link>
-        <div class="drop-down"><span class="middle-h"></span></div>
         <ul class="link-list">
           <li v-for="item in menuItems" :key="item.path">
             <router-link class="first-level for-pc" :to="item.path" :exact="item.path === '/'">{{ item.name }}</router-link>
@@ -41,12 +43,10 @@
       <div class="footer-main">
         <div class="footer-container">
           <div class="footer-grid">
-            <!-- 品牌区 -->
             <div class="footer-brand">
               <div class="brand-logo">
                 <router-link to="/">
-                  <span class="logo-text">数字经济</span>
-                  <span class="logo-sub">DIGITAL ECONOMY PORTAL</span>
+                  <img src="/images/全称渐变.png" alt="陵水数投" class="footer-logo" />
                 </router-link>
               </div>
               <p class="brand-slogan">创新驱动发展 · 科技赋能未来</p>
@@ -65,8 +65,7 @@
                 </div>
               </div>
             </div>
-            
-            <!-- 快速导航 -->
+
             <div class="footer-nav">
               <h4 class="footer-title">关于我们</h4>
               <div class="nav-links">
@@ -75,7 +74,7 @@
                 <router-link to="/business">业务介绍</router-link>
               </div>
             </div>
-            
+
             <div class="footer-nav">
               <h4 class="footer-title">新闻资讯</h4>
               <div class="nav-links">
@@ -84,7 +83,7 @@
                 <router-link to="/news?tab=project">项目案例</router-link>
               </div>
             </div>
-            
+
             <div class="footer-nav">
               <h4 class="footer-title">服务支持</h4>
               <div class="nav-links">
@@ -142,12 +141,18 @@ const menuItems = [
 </script>
 
 <style scoped>
-.icon_logo_home {
+.nav-logo-wrapper {
+  position: absolute;
+  left: 30px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+}
+
+.nav-logo-wrapper .nav-logo {
+  height: 180px;
+  width: auto;
   display: block;
-  font-size: 24px;
-  font-weight: bold;
-  color: #3E87C7;
-  letter-spacing: 2px;
 }
 
 /* 现代化底部样式 */
@@ -177,7 +182,7 @@ const menuItems = [
 }
 
 .footer-main {
-  padding: 60px 0 50px;
+  padding: 32px 0 22px;
   position: relative;
   z-index: 1;
 }
@@ -190,54 +195,44 @@ const menuItems = [
 
 .footer-grid {
   display: grid;
-  grid-template-columns: 1.5fr 1fr 1fr 1fr;
-  gap: 60px;
+  grid-template-columns: 1.2fr 1fr 1fr 1fr;
+  gap: 40px;
+  align-items: start;
 }
 
 /* 品牌区 */
 .footer-brand .brand-logo a {
-  display: flex;
-  flex-direction: column;
+  display: inline-block;
   text-decoration: none;
 }
 
-.footer-brand .logo-text {
-  font-size: 28px;
-  font-weight: bold;
-  letter-spacing: 4px;
-  background: linear-gradient(135deg, #fff 0%, #9EB7CC 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.footer-brand .logo-sub {
-  font-size: 11px;
-  letter-spacing: 3px;
-  color: rgba(255,255,255,0.4);
-  margin-top: 6px;
+.footer-brand .footer-logo {
+  height: 180px;
+  width: auto;
+  max-width: 100%;
+  margin: -55px 0;
 }
 
 .footer-brand .brand-slogan {
-  font-size: 14px;
+  font-size: 13px;
   color: rgba(255,255,255,0.6);
-  margin: 25px 0;
-  padding-left: 15px;
-  border-left: 3px solid #3E87C7;
-  line-height: 1.8;
+  margin: 6px 0 12px;
+  padding-left: 0;
+  border-left: none;
+  line-height: 1.6;
 }
 
 .footer-brand .brand-contact {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 10px;
 }
 
 .footer-brand .contact-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  font-size: 14px;
+  gap: 10px;
+  font-size: 13px;
   color: rgba(255,255,255,0.7);
   transition: color 0.3s;
 }
@@ -247,8 +242,8 @@ const menuItems = [
 }
 
 .footer-brand .contact-icon {
-  font-size: 16px;
-  width: 22px;
+  font-size: 15px;
+  width: 20px;
   text-align: center;
 }
 
@@ -257,9 +252,9 @@ const menuItems = [
   font-size: 16px;
   font-weight: 600;
   color: #fff;
-  margin-bottom: 25px;
+  margin-bottom: 12px;
   position: relative;
-  padding-bottom: 14px;
+  padding-bottom: 10px;
 }
 
 .footer-nav .footer-title::after {
@@ -276,7 +271,7 @@ const menuItems = [
 .footer-nav .nav-links {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 8px;
 }
 
 .footer-nav .nav-links a {
@@ -314,7 +309,7 @@ const menuItems = [
 /* 底部版权区 */
 .footer-bottom {
   background: rgba(0,0,0,0.25);
-  padding: 22px 0;
+  padding: 14px 0;
   border-top: 1px solid rgba(255,255,255,0.06);
   position: relative;
   z-index: 1;
@@ -338,7 +333,7 @@ const menuItems = [
 
 .footer-bottom .bottom-links {
   display: flex;
-  gap: 28px;
+  gap: 18px;
 }
 
 .footer-bottom .bottom-links a {
@@ -356,7 +351,11 @@ const menuItems = [
 @media (max-width: 1024px) {
   .footer-grid {
     grid-template-columns: 1fr 1fr;
-    gap: 40px;
+    gap: 22px;
+  }
+
+  .footer-brand {
+    grid-column: 1 / -1;
   }
   
   .footer-container {
@@ -367,11 +366,11 @@ const menuItems = [
 @media (max-width: 640px) {
   .footer-grid {
     grid-template-columns: 1fr;
-    gap: 35px;
+    gap: 18px;
   }
   
   .footer-main {
-    padding: 40px 0 35px;
+    padding: 28px 0 18px;
   }
   
   .footer-bottom .bottom-content {
@@ -387,19 +386,6 @@ const menuItems = [
 </style>
 
 <style>
-/* 修复导航文字垂直居中 */
-.top-nav .link-list > li > .first-level.for-pc {
-  line-height: 54px !important;
-  position: relative;
-  top: -7px;
-}
-
-/* 数字经济位置调整 */
-.top-nav .index .icon_logo_home {
-  position: relative;
-  top: -1px;
-}
-
 /* 隐藏绿条 */
 .top-nav .bottom-parallelogram {
   display: none !important;

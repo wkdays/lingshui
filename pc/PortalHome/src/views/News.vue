@@ -90,31 +90,8 @@ const apiMap = {
   party: partyApi
 }
 
-const defaultData = {
-  news: [
-    { id: 1, title: '公司成功签约数智城市项目', summary: '近日，公司与某市政府成功签约数智城市建设项目，将为城市数字化转型提供全方位解决方案，助力智慧城市建设迈上新台阶。', created_at: '2024-01-15', cover: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=300&h=200&fit=crop' },
-    { id: 2, title: '低空经济发展规划正式发布', summary: '公司发布低空经济发展规划，明确未来三年发展目标和重点任务，抢占低空经济新赛道。', created_at: '2024-01-12', cover: 'https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=300&h=200&fit=crop' },
-    { id: 3, title: '数字经济供应链平台正式上线', summary: '历时半年精心打造的数字经济供应链平台正式上线运营，为企业提供一站式数字化服务。', created_at: '2024-01-10', cover: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=300&h=200&fit=crop' },
-    { id: 4, title: '公司荣获数字经济创新奖', summary: '在第十届数字经济峰会上，公司凭借在数智城市领域的突出贡献，荣获"数字经济创新奖"。', created_at: '2024-01-08', cover: 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=300&h=200&fit=crop' },
-    { id: 5, title: '战略合作签约仪式成功举行', summary: '公司与多家知名企业举行战略合作签约仪式，共同推进数字经济生态建设。', created_at: '2024-01-05', cover: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=300&h=200&fit=crop' }
-  ],
-  bidding: [
-    { id: 1, title: '智慧园区建设项目招标公告', summary: '就智慧园区建设项目进行公开招标，欢迎符合条件的供应商参与投标。', created_at: '2024-01-14' },
-    { id: 2, title: '数据中心设备采购招标公告', summary: '现就数据中心服务器、存储设备等进行公开招标采购。', created_at: '2024-01-11' },
-    { id: 3, title: '软件开发服务招标公告', summary: '就数字化管理平台软件开发服务进行招标，诚邀有实力的软件企业参与。', created_at: '2024-01-09' }
-  ],
-  project: [
-    { id: 1, title: '数智城市一期项目', summary: '项目已完成需求分析和系统设计阶段，正在进行核心模块开发。当前进度：65%', created_at: '2024-01-15' },
-    { id: 2, title: '低空经济平台建设', summary: '平台架构设计已完成，正在进行飞行监管模块开发测试。当前进度：40%', created_at: '2024-01-13' },
-    { id: 3, title: '供应链数字化改造', summary: '已完成供应商管理模块上线，正在推进物流跟踪功能开发。当前进度：80%', created_at: '2024-01-10' }
-  ],
-  party: [
-    { id: 1, title: '党支部开展"学思想、强党性"主题党日活动', summary: '公司党支部组织全体党员开展主题党日活动，深入学习党的创新理论。', created_at: '2024-01-14', cover: 'https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?w=300&h=200&fit=crop' },
-    { id: 2, title: '深入学习贯彻党的二十大精神', summary: '公司组织专题学习会，深入学习贯彻党的二十大精神，推动各项工作落实。', created_at: '2024-01-11', cover: 'https://images.unsplash.com/photo-1577495508048-b635879837f1?w=300&h=200&fit=crop' },
-    { id: 3, title: '党员志愿服务进社区', summary: '公司党员志愿者走进社区，开展数字技能培训志愿服务活动。', created_at: '2024-01-08', cover: 'https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=300&h=200&fit=crop' },
-    { id: 4, title: '廉政教育专题学习会召开', summary: '公司召开廉政教育专题学习会，筑牢党员干部廉洁自律防线。', created_at: '2024-01-05', cover: 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=300&h=200&fit=crop' }
-  ]
-}
+const list = ref([])
+const total = ref(0)
 
 const formatDate = (date) => {
   if (!date) return ''
@@ -143,19 +120,39 @@ const goDetail = (item) => {
   router.push(`/news/${item.id}?type=${activeTab.value}`)
 }
 
-const list = computed(() => defaultData[activeTab.value] || [])
-const total = computed(() => list.value.length)
+const loadData = async () => {
+  loading.value = true
+  try {
+    const api = apiMap[activeTab.value]
+    const res = await api.getList({ page: page.value, limit: pageSize.value })
+    if (res?.data) {
+      list.value = res.data
+      total.value = res.total || res.data.length
+    }
+  } catch (error) {
+    console.error('Load data error:', error)
+    list.value = []
+    total.value = 0
+  } finally {
+    loading.value = false
+  }
+}
 
 onMounted(() => {
   if (route.query.tab && tabs.some(t => t.key === route.query.tab)) {
     activeTab.value = route.query.tab
   }
+  loadData()
 })
 
 watch(() => route.query.tab, (val) => {
   if (val && tabs.some(t => t.key === val)) {
     activeTab.value = val
   }
+})
+
+watch([activeTab, page], () => {
+  loadData()
 })
 </script>
 

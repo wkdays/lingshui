@@ -172,18 +172,16 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
-import { newsApi } from '@/api'
+import { newsApi, carouselApi, partyApi } from '@/api'
 
 // 当前轮播索引
 const currentSlide = ref(0)
 let slideTimer = null
 
-// 轮播图数据
+// 轮播图数据 - 默认备用数据
 const carouselItems = ref([
-  { image: '/images/banner-digital-economy.jpg', title: '数字经济引领未来发展', link: '' },
-  { image: '/images/banner-technology.jpg', title: '创新驱动 服务至上', link: '' },
-  { image: '/images/banner-smart-city.jpg', title: '科技赋能产业升级', link: '' },
-  { image: '/images/banner-building.jpg', title: '智慧城市解决方案', link: '' }
+  { image: '/images/banner-digital-economy.jpg', title: '数字经济引领未来发展' },
+  { image: '/images/banner-smart-city.jpg', title: '智慧城市解决方案' }
 ])
 
 // 焦点新闻
@@ -196,16 +194,7 @@ const focusList = ref([
 ])
 
 // 公司动态
-const newsList = ref([
-  { id: 1, image: '/images/news-meeting-1.jpg', title: '公司召开2025年度工作会议', date: '2024-12-12', summary: '12月12日，公司召开2025年度工作会议，全面总结2024年工作，部署2025年重点任务。' },
-  { id: 2, image: '/images/news-conference.jpg', title: '我司在数字经济峰会上获得多项荣誉', date: '2024-12-10', summary: '在第五届数字经济峰会上，我司凭借在智慧城市领域的突出贡献获得多项荣誉。' },
-  { id: 3, image: '/images/news-teamwork.jpg', title: '公司荣获"数字化转型优秀企业"称号', date: '2024-12-08', summary: '' },
-  { id: 4, image: '/images/news-meeting-2.jpg', title: '智慧园区项目顺利通过验收', date: '2024-12-05', summary: '' },
-  { id: 5, image: '/images/news-meeting-1.jpg', title: '公司召开年度战略规划会议', date: '2024-11-28', summary: '' },
-  { id: 6, image: '/images/news-conference.jpg', title: '新一代大数据平台正式上线', date: '2024-11-25', summary: '' },
-  { id: 7, image: '/images/news-teamwork.jpg', title: '公司与高校共建产学研合作基地', date: '2024-11-20', summary: '' },
-  { id: 8, image: '/images/news-meeting-2.jpg', title: '智慧交通解决方案发布会成功举办', date: '2024-11-15', summary: '' }
-])
+const newsList = ref([])
 
 // 公司介绍数据
 const aboutItems = ref([
@@ -216,12 +205,7 @@ const aboutItems = ref([
 ])
 
 // 党建工作
-const partyList = ref([
-  { id: 10, image: '/images/party-team-activity.jpg', title: '公司党支部开展主题党日活动', date: '2024-12-08' },
-  { id: 11, image: '/images/party-volunteer.jpg', title: '党员志愿服务队深入社区开展服务', date: '2024-12-01' },
-  { id: 12, image: '/images/party-honor.jpg', title: '公司荣获"先进基层党组织"称号', date: '2024-11-20' },
-  { id: 13, image: '/images/party-discussion.jpg', title: '党建引领企业高质量发展座谈会', date: '2024-11-15' }
-])
+const partyList = ref([])
 
 // 轮播控制
 const startSlideTimer = () => {
@@ -274,31 +258,57 @@ const getDay = (dateStr) => {
 
 // 从API获取数据
 onMounted(async () => {
+  // 先启动轮播（使用默认数据）
   startSlideTimer()
   
   try {
-    const newsRes = await newsApi.getList({ category: 'news', page: 1, pageSize: 8 })
-    if (newsRes.data?.list?.length > 0) {
-      newsList.value = newsRes.data.list.map(item => ({
+    // 获取轮播图数据
+    const carouselRes = await carouselApi.getList()
+    console.log('Carousel API response:', carouselRes)
+    if (carouselRes?.data?.length > 0) {
+      carouselItems.value = carouselRes.data.map(item => ({
         id: item.id,
-        image: item.cover_image || '/images/news-1.jpg',
+        image: item.image.startsWith('/') ? item.image : item.image,
         title: item.title,
-        date: item.publish_date?.split('T')[0] || '',
-        summary: item.summary || item.content?.substring(0, 100) + '...'
+        description: item.description,
+        link: ''
       }))
+      currentSlide.value = 0
     }
     
-    const partyRes = await newsApi.getList({ category: 'party', page: 1, pageSize: 4 })
-    if (partyRes.data?.list?.length > 0) {
-      partyList.value = partyRes.data.list.map(item => ({
+    // 获取新闻数据
+    const newsRes = await newsApi.getList({ page: 1, limit: 8 })
+    if (newsRes?.data?.length > 0) {
+      newsList.value = newsRes.data.map(item => ({
         id: item.id,
-        image: item.cover_image || '/images/party-1.jpg',
+        image: item.cover || '/images/news-1.jpg',
         title: item.title,
-        date: item.publish_date?.split('T')[0] || ''
+        date: item.created_at?.split('T')[0] || '',
+        summary: item.summary || ''
+      }))
+      // 同时更新焦点新闻
+      const recommendNews = newsRes.data.filter(item => item.recommend)
+      if (recommendNews.length > 0) {
+        focusList.value = recommendNews.slice(0, 4).map(item => ({
+          id: item.id,
+          image: item.cover || '/images/focus-1.jpg',
+          title: item.title
+        }))
+      }
+    }
+    
+    // 获取党建数据
+    const partyRes = await partyApi.getList({ page: 1, limit: 4 })
+    if (partyRes?.data?.length > 0) {
+      partyList.value = partyRes.data.map(item => ({
+        id: item.id,
+        image: item.cover || '/images/party-1.jpg',
+        title: item.title,
+        date: item.created_at?.split('T')[0] || ''
       }))
     }
   } catch (error) {
-    console.log('使用默认数据展示')
+    console.log('API error, using default data:', error)
   }
 })
 

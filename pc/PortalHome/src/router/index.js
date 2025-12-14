@@ -40,6 +40,12 @@ const routes = [
         name: 'Service',
         component: () => import('@/views/Service.vue'),
         meta: { title: '一站式服务' }
+      },
+      {
+        path: 'ai-chat',
+        name: 'AiChat',
+        component: () => import('@/views/AiChat.vue'),
+        meta: { title: 'AI对话' }
       }
     ]
   },
