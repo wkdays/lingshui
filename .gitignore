@@ -1,0 +1,10 @@
+node_modules/
+unpackage/
+.DS_Store
+*.log
+
+pc/
+dist/
+**/dist/
+.vite/
+**/.vite/

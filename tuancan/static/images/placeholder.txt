@@ -1,0 +1,2 @@
+此目录用于存放图片资源
+包括：banner1-3.png, shop1-3.png, food1-8.png, default-avatar.png 等
