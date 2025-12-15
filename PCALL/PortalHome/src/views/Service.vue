@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="service-page">
     <!-- 装饰图标 -->
     <div class="decor-icons">
@@ -27,19 +27,19 @@
         <p class="hero-desc">
           助力企业数字化转型，提供全方位数字文化出海服务。集数智化项目开发、数据资产运营、无人机技术服务于一体，打造自贸港数字样板间。
         </p>
-        
+
         <div class="hero-buttons">
           <button class="btn-primary" @click="goToChat">
             <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
             </svg>
-            智能咨询
+            智能申请
           </button>
-          <button class="btn-outline" @click="goToChat">
+          <button class="btn-outline">
             <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10"/>
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
             </svg>
-            出海服务
+            服务手册
           </button>
         </div>
 
@@ -49,25 +49,25 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
             </svg>
-            数智化项目开发
+            数字文创
           </span>
           <span class="tag">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
             </svg>
-            数据资产运营
+            数字娱乐
           </span>
           <span class="tag">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
             </svg>
-            无人机技术服务
+            影视短剧
           </span>
           <span class="tag">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
             </svg>
-            数字文化出海
+            跨境电商
           </span>
         </div>
       </div>
@@ -75,51 +75,11 @@
       <!-- 右侧展示图 -->
       <div class="hero-right">
         <div class="framework-card">
-          <div class="framework-title">陵水数投发展框架</div>
-          <div class="framework-grid">
-            <div class="framework-item">
-              <div class="item-title">数智化项目开发</div>
-              <div class="item-content">
-                <span>产业数据赋能</span>
-                <span>公共数据汇聚</span>
-                <span>城市一张网</span>
-                <span>档案电子化</span>
-              </div>
-            </div>
-            <div class="framework-item">
-              <div class="item-title">数字文化出海服务</div>
-              <div class="item-content">
-                <span>跨境来数加工</span>
-                <span>数字文化产业云</span>
-                <span>国际数字内容平台</span>
-                <span>海缆登陆站</span>
-              </div>
-            </div>
-            <div class="framework-item">
-              <div class="item-title">数据资产运营</div>
-              <div class="item-content">
-                <span>智能硬件场景</span>
-                <span>数据标注服务</span>
-                <span>数字经济一体化</span>
-                <span>服务支撑体系</span>
-              </div>
-            </div>
-            <div class="framework-item">
-              <div class="item-title">无人机技术服务</div>
-              <div class="item-content">
-                <span>场景化专业服务</span>
-                <span>低空经济一网统飞</span>
-                <span>低空经济数字基建</span>
-                <span>航空数据服务</span>
-              </div>
-            </div>
-          </div>
-          <div class="framework-slogan">
-            <span>应用场景赋能者</span>
-            <span class="divider">·</span>
-            <span>建设自贸港数字样板间</span>
-            <span class="divider">·</span>
-            <span>挖掘数据资源金矿</span>
+          <div class="framework-title">平台介绍</div>
+          <div class="framework-content">
+            <p class="framework-text">搭建公共服务平台、提供全链条服务来赋能企业出海的成功经验，建设一个由政府主导、市场运营、技术赋能的"一站式"服务平台，是破解出海瓶颈、优化营商环境、培育数字贸易新动能的关键举措。</p>
+            <p class="framework-text">本项目旨在构建一个覆盖数字文化出海全生命周期的智能服务平台，通过整合政务、法务、财务、业务四大服务场景，利用先进的大模型技术，为企业提供从咨询、申报到运营复盘的一体化解决方案，显著降低出海综合成本与时间门槛，将陵水打造成为海南乃至全国数字文化出海的重要枢纽和创新高地。</p>
+            <p class="framework-text">通过大模型对知识库的综合调用与推理，平台能够理解企业自然语言描述的产品与业务模式，自动生成个性化的出海合规路径图、材料清单、资源匹配方案，实现从"检索"到"生成"，再到"审阅"与"落地"的全生命周期智能申报服务闭环。</p>
           </div>
         </div>
       </div>
@@ -169,7 +129,6 @@ $accent: #9EB7CC;
   padding-top: 80px;
 }
 
-// 装饰图标
 .decor-icons {
   position: absolute;
   top: 0;
@@ -184,7 +143,7 @@ $accent: #9EB7CC;
   position: absolute;
   opacity: 0.6;
   animation: float 4s ease-in-out infinite;
-  
+
   &.icon-1 {
     width: 40px;
     height: 40px;
@@ -193,7 +152,7 @@ $accent: #9EB7CC;
     color: $secondary;
     animation-delay: 0s;
   }
-  
+
   &.icon-2 {
     width: 28px;
     height: 28px;
@@ -202,7 +161,7 @@ $accent: #9EB7CC;
     color: #f0a0a0;
     animation-delay: 1s;
   }
-  
+
   &.icon-3 {
     width: 32px;
     height: 32px;
@@ -217,7 +176,7 @@ $accent: #9EB7CC;
   position: absolute;
   border-radius: 50%;
   animation: pulse 3s ease-in-out infinite;
-  
+
   &.dot-1 {
     width: 12px;
     height: 12px;
@@ -226,7 +185,7 @@ $accent: #9EB7CC;
     background: $secondary;
     animation-delay: 0.5s;
   }
-  
+
   &.dot-2 {
     width: 8px;
     height: 8px;
@@ -235,7 +194,7 @@ $accent: #9EB7CC;
     background: #f0a0a0;
     animation-delay: 1.5s;
   }
-  
+
   &.dot-3 {
     width: 10px;
     height: 10px;
@@ -256,19 +215,17 @@ $accent: #9EB7CC;
   50% { opacity: 1; transform: scale(1.2); }
 }
 
-// 右侧倾斜背景
 .slant-bg {
   position: absolute;
   top: 0;
   right: 0;
-  width: 55%;
+  width: 45%;
   height: 100%;
   background: linear-gradient(135deg, $secondary 0%, $primary 100%);
   clip-path: polygon(25% 0, 100% 0, 100% 100%, 0% 100%);
   z-index: 0;
 }
 
-// 主内容区域
 .hero-section {
   display: flex;
   align-items: center;
@@ -280,7 +237,6 @@ $accent: #9EB7CC;
   min-height: calc(100vh - 200px);
 }
 
-// 左侧内容
 .hero-left {
   flex: 1;
   max-width: 550px;
@@ -303,7 +259,6 @@ $accent: #9EB7CC;
   margin-bottom: 32px;
 }
 
-// 按钮组
 .hero-buttons {
   display: flex;
   gap: 16px;
@@ -319,16 +274,16 @@ $accent: #9EB7CC;
   border: none;
   border-radius: 8px;
   color: #fff;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s;
-  
+
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba($primary, 0.3);
   }
-  
+
   .btn-icon {
     width: 18px;
     height: 18px;
@@ -344,23 +299,22 @@ $accent: #9EB7CC;
   border: 2px solid $secondary;
   border-radius: 8px;
   color: $secondary;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s;
-  
+
   &:hover {
     background: rgba($secondary, 0.05);
     transform: translateY(-2px);
   }
-  
+
   .btn-icon {
     width: 18px;
     height: 18px;
   }
 }
 
-// 特性标签
 .feature-tags {
   display: flex;
   flex-wrap: wrap;
@@ -377,7 +331,7 @@ $accent: #9EB7CC;
   font-size: 13px;
   color: $primary;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  
+
   svg {
     width: 14px;
     height: 14px;
@@ -385,7 +339,6 @@ $accent: #9EB7CC;
   }
 }
 
-// 右侧展示图
 .hero-right {
   flex: 1;
   display: flex;
@@ -394,7 +347,6 @@ $accent: #9EB7CC;
   position: relative;
 }
 
-// 框架卡片
 .framework-card {
   max-width: 520px;
   padding: 30px;
@@ -404,76 +356,39 @@ $accent: #9EB7CC;
   text-align: center;
   font-size: 28px;
   font-weight: 700;
-  color: #fff;
-  margin-bottom: 32px;
-  letter-spacing: 3px;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-// 四宫格布局
-.framework-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 24px;
+  color: #FFFFFF;
   margin-bottom: 28px;
+  letter-spacing: 3px;
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.4);
 }
 
-.framework-item {
-  .item-title {
-    font-size: 16px;
+.framework-content {
+  background: transparent;
+  border-radius: 16px;
+  padding: 24px;
+  
+}
+
+.framework-text {
+  font-size: 16px;
+  color: #1e3a5f;
+  line-height: 2;
+  margin: 0 0 20px;
+  letter-spacing: 0.5px;
+  text-indent: 2em;
+  font-weight: 400;
+  
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  .highlight {
+    color: #FFD700;
     font-weight: 600;
-    color: #fff;
-    margin-bottom: 12px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
-  }
-  
-  .item-content {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    
-    span {
-      font-size: 13px;
-      color: rgba(255, 255, 255, 0.9);
-      padding-left: 12px;
-      position: relative;
-      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.15);
-      
-      &::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 4px;
-        height: 4px;
-        background: rgba(255, 255, 255, 0.6);
-        border-radius: 50%;
-      }
-    }
   }
 }
 
-.framework-slogan {
-  text-align: center;
-  padding-top: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
-  
-  span {
-    font-size: 13px;
-    color: rgba(255, 255, 255, 0.8);
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
-  }
-  
-  .divider {
-    margin: 0 10px;
-    color: rgba(255, 255, 255, 0.4);
-  }
-}
-
-// 底部统计数据
 .stats-section {
   display: flex;
   justify-content: center;
@@ -490,7 +405,7 @@ $accent: #9EB7CC;
   flex-direction: column;
   align-items: center;
   position: relative;
-  
+
   .stat-value {
     font-size: 48px;
     font-weight: 300;
@@ -498,10 +413,14 @@ $accent: #9EB7CC;
     line-height: 1;
     margin-bottom: 12px;
   }
-  
+
   .stat-label {
     font-size: 14px;
     color: #888;
   }
 }
 </style>
+
+
+
+

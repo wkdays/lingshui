@@ -1,26 +1,54 @@
-<template>
+﻿<template>
   <div class="ai-chat-page">
     <!-- 返回按钮 -->
     <div class="back-btn" @click="goBack">
       <el-icon><ArrowLeft /></el-icon>
       <span>返回</span>
     </div>
-    
+
     <div class="chat-container">
-      <!-- 欢迎标题 -->
-      <div class="welcome-section">
-        <div class="welcome-icon">
-          <el-icon :size="48"><ChatLineRound /></el-icon>
+      <!-- 分类滑块 -->
+      <div class="category-slider">
+        <div class="slider-container">
+          <button
+            class="slider-arrow"
+            :disabled="!canPrev"
+            @click="goPrevCategory"
+            aria-label="上一张"
+          >
+            <el-icon><ArrowLeft /></el-icon>
+          </button>
+
+          <div class="slider-wrapper">
+            <div
+              class="slider-item"
+              :class="{ active: true }"
+              @click="selectCategory(currentCategory)"
+            >
+              <div class="slider-icon">
+                <el-icon :size="32"><ChatLineRound /></el-icon>
+              </div>
+              <span class="slider-title">{{ categoryMap[currentCategory] }}</span>
+            </div>
+          </div>
+
+          <button
+            class="slider-arrow"
+            :disabled="!canNext"
+            @click="goNextCategory"
+            aria-label="下一张"
+          >
+            <el-icon><ArrowRight /></el-icon>
+          </button>
         </div>
-        <h1 class="welcome-title">{{ pageTitle }}</h1>
         <p class="welcome-subtitle">{{ pageSubtitle }}</p>
       </div>
 
       <!-- 输入框区域 -->
       <div class="input-box">
         <div class="input-wrapper">
-          <textarea 
-            v-model="inputText" 
+          <textarea
+            v-model="inputText"
             placeholder="发送消息..."
             @keyup.enter.exact="sendMessage"
             rows="1"
@@ -40,8 +68,8 @@
           </div>
           <div class="toolbar-right">
             <el-icon class="attach-btn"><Paperclip /></el-icon>
-            <button 
-              class="send-btn" 
+            <button
+              class="send-btn"
               :class="{ active: inputText.trim() }"
               @click="sendMessage"
               :disabled="!inputText.trim()"
@@ -58,7 +86,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ChatLineRound, Top, Search, Connection, Paperclip, ArrowLeft } from '@element-plus/icons-vue'
+import { ChatLineRound, Top, Search, Connection, Paperclip, ArrowLeft, ArrowRight } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -67,25 +95,31 @@ const inputRef = ref(null)
 
 const categoryMap = {
   culture: '数字文创',
-  logistics: '数字物流',
+  entertainment: '数字娱乐',
   media: '影视短剧',
   crossborder: '跨境电商'
 }
 
-const stageMap = {
-  consult: '事前咨询',
-  apply: '事中申报',
-  review: '事后复查'
+const currentCategory = ref(route.query.category || 'culture')
+
+const categoryKeys = Object.keys(categoryMap)
+const currentIndex = computed(() => categoryKeys.indexOf(currentCategory.value))
+const canPrev = computed(() => currentIndex.value > 0)
+const canNext = computed(() => currentIndex.value >= 0 && currentIndex.value < categoryKeys.length - 1)
+
+const selectCategory = (key) => {
+  currentCategory.value = key
 }
 
-const pageTitle = computed(() => {
-  const category = categoryMap[route.query.category]
-  const stage = stageMap[route.query.stage]
-  if (category && stage) {
-    return `${category} · ${stage}`
-  }
-  return category || stage || '智能助手'
-})
+const goPrevCategory = () => {
+  if (!canPrev.value) return
+  currentCategory.value = categoryKeys[currentIndex.value - 1]
+}
+
+const goNextCategory = () => {
+  if (!canNext.value) return
+  currentCategory.value = categoryKeys[currentIndex.value + 1]
+}
 
 const pageSubtitle = computed(() => {
   return '数字文化出海一站式服务平台，为您提供专业咨询服务'
@@ -154,34 +188,107 @@ const sendMessage = () => {
   gap: 50px;
 }
 
-.welcome-section {
+.category-slider {
   text-align: center;
-  
-  .welcome-icon {
-    width: 80px;
-    height: 80px;
-    margin: 0 auto 24px;
-    background: linear-gradient(135deg, #3E87C7, #2A446E);
-    border-radius: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    box-shadow: 0 8px 24px rgba(62, 135, 199, 0.3);
+  width: 100%;
+}
+
+.slider-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.slider-arrow {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid #e8eef3;
+  background: #fff;
+  color: #3E87C7;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+
+  &:hover:not(:disabled) {
+    border-color: #3E87C7;
+    box-shadow: 0 4px 12px rgba(62, 135, 199, 0.18);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    box-shadow: none;
   }
 }
 
-.welcome-title {
-  font-size: 36px;
-  font-weight: 600;
+.slider-wrapper {
+  display: flex;
+  justify-content: center;
+  padding: 10px 0;
+}
+
+.slider-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 30px;
+  background: #fff;
+  border: 2px solid #e8eef3;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.3s;
+  min-width: 120px;
+  
+  &:hover {
+    border-color: #3E87C7;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(62, 135, 199, 0.15);
+  }
+  
+  &.active {
+    border-color: #3E87C7;
+    background: linear-gradient(135deg, rgba(62, 135, 199, 0.08), rgba(42, 68, 110, 0.05));
+    
+    .slider-icon {
+      background: linear-gradient(135deg, #3E87C7, #2A446E);
+      color: #fff;
+    }
+    
+    .slider-title {
+      color: #3E87C7;
+      font-weight: 600;
+    }
+  }
+}
+
+.slider-icon {
+  width: 60px;
+  height: 60px;
+  background: #e8eef3;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #3E87C7;
+  transition: all 0.3s;
+}
+
+.slider-title {
+  font-size: 16px;
   color: #2A446E;
-  margin: 0 0 12px;
+  font-weight: 500;
 }
 
 .welcome-subtitle {
   font-size: 16px;
   color: #6b7280;
-  margin: 0;
+  margin: 24px 0 0;
 }
 
 .input-box {
@@ -192,7 +299,7 @@ const sendMessage = () => {
   padding: 24px 28px 18px;
   box-shadow: 0 8px 30px rgba(42, 68, 110, 0.08);
   transition: all 0.3s;
-  
+
   &:focus-within {
     border-color: #3E87C7;
     box-shadow: 0 8px 40px rgba(62, 135, 199, 0.18);
@@ -212,7 +319,7 @@ const sendMessage = () => {
     max-height: 150px;
     font-family: inherit;
     color: #1a1a1a;
-    
+
     &::placeholder {
       color: #9ca3af;
     }
@@ -245,12 +352,12 @@ const sendMessage = () => {
   cursor: pointer;
   transition: all 0.2s;
   font-weight: 500;
-  
+
   &:hover {
     background: linear-gradient(135deg, rgba(62, 135, 199, 0.15), rgba(42, 68, 110, 0.1));
     color: #2A446E;
   }
-  
+
   .el-icon {
     font-size: 14px;
   }
@@ -267,7 +374,7 @@ const sendMessage = () => {
   color: #9ca3af;
   cursor: pointer;
   transition: color 0.2s;
-  
+
   &:hover {
     color: #6b7280;
   }
@@ -285,17 +392,17 @@ const sendMessage = () => {
   align-items: center;
   justify-content: center;
   transition: all 0.3s;
-  
+
   &.active {
     background: linear-gradient(135deg, #3E87C7, #2A446E);
     color: #fff;
-    
+
     &:hover {
       transform: scale(1.05);
       box-shadow: 0 6px 20px rgba(62, 135, 199, 0.4);
     }
   }
-  
+
   &:disabled {
     cursor: not-allowed;
   }
