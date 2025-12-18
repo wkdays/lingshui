@@ -35,8 +35,15 @@ export default {
 	},
 	methods: {
 		async loadMessages() {
-			const res = await api.getMessages()
-			this.messages = res.data
+			const res = await api.getNotices()
+			const list = Array.isArray(res.data) ? res.data : []
+			this.messages = list.map(item => ({
+				id: item.id,
+				title: item.title,
+				content: item.content,
+				time: item.time,
+				read: true
+			}))
 		}
 	}
 }

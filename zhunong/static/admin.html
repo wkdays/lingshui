@@ -1,0 +1,1028 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>后台管理</title>
+    <style>
+      :root {
+        --bg: #0b0c10;
+        --panel: rgba(255, 255, 255, 0.08);
+        --panel-2: rgba(255, 255, 255, 0.06);
+        --border: rgba(255, 255, 255, 0.12);
+        --text: rgba(255, 255, 255, 0.92);
+        --muted: rgba(255, 255, 255, 0.65);
+        --primary: #ffffff;
+        --danger: #ff4d4f;
+        --success: #52c41a;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+        background: radial-gradient(1200px 800px at 10% 10%, rgba(255, 255, 255, 0.18), transparent 45%),
+          radial-gradient(800px 600px at 80% 40%, rgba(255, 255, 255, 0.10), transparent 40%),
+          var(--bg);
+        color: var(--text);
+      }
+
+      a {
+        color: inherit;
+      }
+
+      .app {
+        max-width: none;
+        margin: 0;
+        padding: 28px 18px 64px;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 18px;
+      }
+
+      .title {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .title h1 {
+        margin: 0;
+        font-size: 20px;
+        letter-spacing: 1px;
+      }
+
+      .title .sub {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .tabs {
+        display: flex;
+        gap: 10px;
+      }
+
+      .tab {
+        border: 1px solid var(--border);
+        background: var(--panel);
+        color: var(--text);
+        padding: 10px 14px;
+        border-radius: 12px;
+        cursor: pointer;
+        user-select: none;
+        transition: 0.15s ease;
+      }
+
+      .tab.active {
+        background: rgba(255, 255, 255, 0.16);
+        border-color: rgba(255, 255, 255, 0.22);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        overflow: hidden;
+      }
+
+      .card-hd {
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .card-hd .left {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .card-hd .name {
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .card-hd .desc {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .card-bd {
+        padding: 14px 16px;
+      }
+
+      .row {
+        display: grid;
+        grid-template-columns: 160px 1fr;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+
+      .row label {
+        color: var(--muted);
+        font-size: 12px;
+        padding-top: 10px;
+      }
+
+      input,
+      textarea,
+      select {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--text);
+        outline: none;
+      }
+
+      textarea {
+        min-height: 110px;
+        resize: vertical;
+      }
+
+      input::placeholder,
+      textarea::placeholder {
+        color: rgba(255, 255, 255, 0.35);
+      }
+
+      .actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.12);
+        color: var(--text);
+        padding: 10px 14px;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: 0.15s ease;
+      }
+
+      .btn.primary {
+        background: rgba(255, 255, 255, 0.18);
+      }
+
+      .btn.danger {
+        border-color: rgba(255, 77, 79, 0.55);
+        background: rgba(255, 77, 79, 0.18);
+      }
+
+      .btn.success {
+        border-color: rgba(82, 196, 26, 0.55);
+        background: rgba(82, 196, 26, 0.18);
+      }
+
+      .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      .table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      .table th,
+      .table td {
+        text-align: left;
+        padding: 10px 10px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        vertical-align: top;
+        font-size: 13px;
+      }
+
+      .table th {
+        color: var(--muted);
+        font-weight: 600;
+        font-size: 12px;
+      }
+
+      .badge {
+        display: inline-flex;
+        padding: 3px 8px;
+        border-radius: 999px;
+        font-size: 12px;
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .img {
+        width: 120px;
+        height: 54px;
+        border-radius: 10px;
+        object-fit: cover;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        background: rgba(255, 255, 255, 0.06);
+      }
+
+      #banner-preview {
+        cursor: pointer;
+      }
+
+      .hint {
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .toast {
+        position: fixed;
+        right: 18px;
+        bottom: 18px;
+        background: rgba(0, 0, 0, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 12px;
+        padding: 10px 12px;
+        color: var(--text);
+        max-width: 70vw;
+        display: none;
+        backdrop-filter: blur(10px);
+      }
+
+      .toast.show {
+        display: block;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      .login-wrap {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+      }
+
+      .login-card {
+        width: 420px;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        overflow: hidden;
+      }
+
+      .login-hd {
+        padding: 16px 16px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .login-title {
+        font-size: 16px;
+        font-weight: 800;
+        margin: 0;
+      }
+
+      .login-sub {
+        margin-top: 6px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .login-bd {
+        padding: 16px 16px;
+      }
+
+      .shell {
+        width: 100%;
+        max-width: none;
+        margin: 0;
+        padding: 18px;
+        min-height: 100vh;
+        display: flex;
+        gap: 14px;
+      }
+
+      .sidebar {
+        width: 220px;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .sidebar-hd {
+        padding: 14px 14px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .sidebar-name {
+        font-size: 14px;
+        font-weight: 800;
+        margin: 0;
+      }
+
+      .sidebar-user {
+        margin-top: 6px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .nav {
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .nav-item {
+        padding: 10px 12px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.06);
+        cursor: pointer;
+        user-select: none;
+        font-size: 13px;
+      }
+
+      .nav-item.active {
+        background: rgba(255, 255, 255, 0.14);
+        border-color: rgba(255, 255, 255, 0.18);
+      }
+
+      .sidebar-ft {
+        margin-top: auto;
+        padding: 12px;
+        border-top: 1px solid var(--border);
+      }
+
+      .app-main {
+        flex: 1;
+        max-width: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      .tabs {
+        display: none;
+      }
+
+      @media (max-width: 720px) {
+        .row {
+          grid-template-columns: 1fr;
+        }
+
+        .row label {
+          padding-top: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="login-view" class="login-wrap">
+      <div class="login-card">
+        <div class="login-hd">
+          <p class="login-title">管理员登录</p>
+        </div>
+        <div class="login-bd">
+          <div class="row" style="grid-template-columns: 80px 1fr">
+            <label>账号</label>
+            <input id="login-username" placeholder="admin" autocomplete="username" />
+          </div>
+          <div class="row" style="grid-template-columns: 80px 1fr">
+            <label>密码</label>
+            <input id="login-password" type="password" placeholder="admin123456" autocomplete="current-password" />
+          </div>
+          <div class="actions" style="justify-content: flex-end">
+            <button id="login-btn" class="btn primary">登录</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="admin-view" class="shell hidden">
+      <aside class="sidebar">
+        <div class="sidebar-hd">
+          <p class="sidebar-name">后台管理</p>
+          <div id="admin-username" class="sidebar-user">未登录</div>
+        </div>
+        <div class="nav">
+          <div class="nav-item active" data-section="banner">轮播图管理</div>
+          <div class="nav-item" data-section="notice">公告管理</div>
+        </div>
+        <div class="sidebar-ft">
+          <button id="logout-btn" class="btn">退出登录</button>
+        </div>
+      </aside>
+
+      <div class="app app-main">
+        <div class="topbar">
+          <div class="title">
+            <h1>内容管理</h1>
+            <div class="sub">轮播图 / 公告 内容维护（需要管理员登录）</div>
+          </div>
+        </div>
+
+      <div id="panel-banner" class="grid">
+        <div class="card">
+          <div class="card-hd">
+            <div class="left">
+              <div class="name">新增 / 编辑轮播图</div>
+              <div class="desc">图片地址建议填 <span class="badge">/static/xxx.png</span> 或完整 URL</div>
+            </div>
+            <div class="actions">
+              <button id="banner-save" class="btn primary">保存</button>
+              <button id="banner-reset" class="btn">清空</button>
+              <button id="banner-reload" class="btn">刷新列表</button>
+            </div>
+          </div>
+          <div class="card-bd">
+            <input id="banner-id" type="hidden" />
+            <div class="row">
+              <label>图片地址</label>
+              <div>
+                <input id="banner-image_url" placeholder="/static/uploads/xxx.png" />
+                <div class="hint">预览会使用：如果以 /static/ 开头，会拼上当前域名。</div>
+              </div>
+            </div>
+            <div class="row">
+              <label>上传图片</label>
+              <div>
+                <input id="banner-file" type="file" accept="image/*" />
+              </div>
+            </div>
+            <div class="row">
+              <label>标题</label>
+              <input id="banner-title" placeholder="新人专享优惠" />
+            </div>
+            <div class="row">
+              <label>跳转链接</label>
+              <input id="banner-link_url" placeholder="https://...（可空）" />
+            </div>
+            <div class="row">
+              <label>排序</label>
+              <input id="banner-sort" type="number" placeholder="10" />
+            </div>
+            <div class="row">
+              <label>状态</label>
+              <select id="banner-status">
+                <option value="1">上架</option>
+                <option value="0">下架</option>
+              </select>
+            </div>
+            <div class="row">
+              <label>预览</label>
+              <img id="banner-preview" class="img" alt="preview" />
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-hd">
+            <div class="left">
+              <div class="name">轮播图列表</div>
+              <div class="desc">排序：sort DESC, id DESC</div>
+            </div>
+          </div>
+          <div class="card-bd" style="padding: 0">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th style="width: 56px">ID</th>
+                  <th style="width: 140px">图片</th>
+                  <th>标题</th>
+                  <th style="width: 80px">排序</th>
+                  <th style="width: 80px">状态</th>
+                  <th style="width: 240px">操作</th>
+                </tr>
+              </thead>
+              <tbody id="banner-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="panel-notice" class="grid" style="display: none">
+        <div class="card">
+          <div class="card-hd">
+            <div class="left">
+              <div class="name">新增 / 编辑公告</div>
+              <div class="desc">支持上下架控制小程序展示</div>
+            </div>
+            <div class="actions">
+              <button id="notice-save" class="btn primary">保存</button>
+              <button id="notice-reset" class="btn">清空</button>
+              <button id="notice-reload" class="btn">刷新列表</button>
+            </div>
+          </div>
+          <div class="card-bd">
+            <input id="notice-id" type="hidden" />
+            <div class="row">
+              <label>标题</label>
+              <input id="notice-title" placeholder="双12活动..." />
+            </div>
+            <div class="row">
+              <label>内容</label>
+              <textarea id="notice-content" placeholder="公告详情内容"></textarea>
+            </div>
+            <div class="row">
+              <label>状态</label>
+              <select id="notice-status">
+                <option value="1">上架</option>
+                <option value="0">下架</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-hd">
+            <div class="left">
+              <div class="name">公告列表</div>
+              <div class="desc">排序：id DESC</div>
+            </div>
+          </div>
+          <div class="card-bd" style="padding: 0">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th style="width: 56px">ID</th>
+                  <th>标题</th>
+                  <th style="width: 90px">状态</th>
+                  <th style="width: 240px">操作</th>
+                </tr>
+              </thead>
+              <tbody id="notice-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script>
+      const qs = (sel) => document.querySelector(sel)
+      const qsa = (sel) => Array.from(document.querySelectorAll(sel))
+      const toastEl = qs('#toast')
+
+      const TOKEN_KEY = 'tg_admin_token'
+      const USER_KEY = 'tg_admin_user'
+
+      const getToken = () => localStorage.getItem(TOKEN_KEY) || ''
+      const setAuth = ({ token, username }) => {
+        localStorage.setItem(TOKEN_KEY, token)
+        localStorage.setItem(USER_KEY, username || 'admin')
+      }
+      const clearAuth = () => {
+        localStorage.removeItem(TOKEN_KEY)
+        localStorage.removeItem(USER_KEY)
+      }
+
+      const showToast = (msg) => {
+        toastEl.textContent = msg
+        toastEl.classList.add('show')
+        clearTimeout(showToast._t)
+        showToast._t = setTimeout(() => toastEl.classList.remove('show'), 2200)
+      }
+
+      const resolveStatic = (url) => {
+        if (typeof url !== 'string') return ''
+        if (url.startsWith('/static/')) return location.origin + url
+        return url
+      }
+
+      const showLogin = () => {
+        qs('#login-view').classList.remove('hidden')
+        qs('#admin-view').classList.add('hidden')
+        qs('#login-password').value = ''
+      }
+
+      const showAdmin = () => {
+        qs('#login-view').classList.add('hidden')
+        qs('#admin-view').classList.remove('hidden')
+        const username = localStorage.getItem(USER_KEY) || 'admin'
+        qs('#admin-username').textContent = `当前账号：${username}`
+      }
+
+      const escapeHtml = (str) => {
+        const s = String(str)
+        return s
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;')
+      }
+
+      const requestJson = async (url, { method = 'GET', body, auth = true } = {}) => {
+        const headers = { 'Content-Type': 'application/json' }
+        const token = getToken()
+        if (auth && token) headers.Authorization = `Bearer ${token}`
+
+        const res = await fetch(url, {
+          method,
+          headers,
+          body: body ? JSON.stringify(body) : undefined
+        })
+        const data = await res.json().catch(() => ({}))
+
+        if (res.status === 401 || data?.code === 401) {
+          clearAuth()
+          showLogin()
+          throw new Error(data?.message || '未登录')
+        }
+
+        if (!res.ok || (data && typeof data === 'object' && Object.prototype.hasOwnProperty.call(data, 'code') && data.code !== 0)) {
+          const message = data?.message || `请求失败 (${res.status})`
+          throw new Error(message)
+        }
+        return data
+      }
+
+      const setSection = (section) => {
+        qsa('.nav-item').forEach((el) => el.classList.toggle('active', el.dataset.section === section))
+        qs('#panel-banner').style.display = section === 'banner' ? '' : 'none'
+        qs('#panel-notice').style.display = section === 'notice' ? '' : 'none'
+      }
+
+      qsa('.nav-item').forEach((el) => {
+        el.addEventListener('click', () => setSection(el.dataset.section))
+      })
+
+      const bannerForm = {
+        id: qs('#banner-id'),
+        image_url: qs('#banner-image_url'),
+        file: qs('#banner-file'),
+        title: qs('#banner-title'),
+        link_url: qs('#banner-link_url'),
+        sort: qs('#banner-sort'),
+        status: qs('#banner-status'),
+        preview: qs('#banner-preview')
+      }
+
+      const noticeForm = {
+        id: qs('#notice-id'),
+        title: qs('#notice-title'),
+        content: qs('#notice-content'),
+        status: qs('#notice-status')
+      }
+
+      const EMPTY_IMG = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=='
+      let bannerPreviewObjectUrl = ''
+
+      const revokeBannerObjectUrl = () => {
+        if (bannerPreviewObjectUrl) {
+          URL.revokeObjectURL(bannerPreviewObjectUrl)
+          bannerPreviewObjectUrl = ''
+        }
+      }
+
+      const readFileAsDataUrl = file =>
+        new Promise((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onload = () => resolve(String(reader.result || ''))
+          reader.onerror = () => reject(new Error('读取文件失败'))
+          reader.readAsDataURL(file)
+        })
+
+      const setBannerPreview = (rawUrl) => {
+        const value = String(rawUrl || '').trim()
+        if (!value) {
+          bannerForm.preview.src = EMPTY_IMG
+          return
+        }
+        bannerForm.preview.src = resolveStatic(value)
+      }
+
+      const bannerReset = () => {
+        bannerForm.id.value = ''
+        bannerForm.image_url.value = ''
+        if (bannerForm.file) bannerForm.file.value = ''
+        revokeBannerObjectUrl()
+        bannerForm.title.value = ''
+        bannerForm.link_url.value = ''
+        bannerForm.sort.value = ''
+        bannerForm.status.value = '1'
+        setBannerPreview('')
+      }
+
+      const noticeReset = () => {
+        noticeForm.id.value = ''
+        noticeForm.title.value = ''
+        noticeForm.content.value = ''
+        noticeForm.status.value = '1'
+      }
+
+      bannerForm.image_url.addEventListener('input', () => {
+        const hasFile = bannerForm.file && bannerForm.file.files && bannerForm.file.files.length
+        if (hasFile) return
+        setBannerPreview(bannerForm.image_url.value)
+      })
+
+      bannerForm.file.addEventListener('change', () => {
+        revokeBannerObjectUrl()
+        const file = bannerForm.file.files && bannerForm.file.files[0]
+        if (!file) {
+          setBannerPreview(bannerForm.image_url.value)
+          return
+        }
+        bannerPreviewObjectUrl = URL.createObjectURL(file)
+        bannerForm.preview.src = bannerPreviewObjectUrl
+      })
+
+      bannerForm.preview.addEventListener('error', () => {
+        bannerForm.preview.src = EMPTY_IMG
+      })
+
+      bannerForm.preview.addEventListener('click', () => {
+        if (bannerPreviewObjectUrl) {
+          window.open(bannerPreviewObjectUrl, '_blank')
+          return
+        }
+        const url = String(bannerForm.image_url.value || '').trim()
+        if (!url) return
+        window.open(resolveStatic(url), '_blank')
+      })
+
+      const loadBanners = async () => {
+        const tbody = qs('#banner-tbody')
+        tbody.innerHTML = ''
+        const res = await requestJson('/api/admin/banner/list')
+        const list = Array.isArray(res.data) ? res.data : []
+        for (const item of list) {
+          const tr = document.createElement('tr')
+          const statusText = Number(item.status) === 1 ? '上架' : '下架'
+          tr.innerHTML = `
+            <td>${item.id}</td>
+            <td><img class="img" src="${resolveStatic(item.image_url)}" alt="" /></td>
+            <td>
+              <div style="font-weight:700">${escapeHtml(item.title || '')}</div>
+              <div style="color: var(--muted); font-size: 12px; margin-top: 4px;">${escapeHtml(item.image_url || '')}</div>
+            </td>
+            <td>${Number(item.sort || 0)}</td>
+            <td><span class="badge">${statusText}</span></td>
+            <td>
+              <div class="actions">
+                <button class="btn" data-act="edit">编辑</button>
+                <button class="btn ${Number(item.status) === 1 ? '' : 'success'}" data-act="toggle">${Number(item.status) === 1 ? '下架' : '上架'}</button>
+                <button class="btn danger" data-act="delete">删除</button>
+              </div>
+            </td>
+          `
+
+          tr.querySelector('[data-act="edit"]').addEventListener('click', () => {
+            bannerForm.id.value = String(item.id)
+            bannerForm.image_url.value = item.image_url || ''
+            if (bannerForm.file) bannerForm.file.value = ''
+            revokeBannerObjectUrl()
+            bannerForm.title.value = item.title || ''
+            bannerForm.link_url.value = item.link_url || ''
+            bannerForm.sort.value = String(item.sort ?? '')
+            bannerForm.status.value = String(item.status ?? 1)
+            setBannerPreview(bannerForm.image_url.value)
+            showToast(`已载入 #${item.id}，修改后点“保存”`) 
+            window.scrollTo({ top: 0, behavior: 'smooth' })
+          })
+
+          tr.querySelector('[data-act="toggle"]').addEventListener('click', async () => {
+            await requestJson('/api/admin/banner/status', {
+              method: 'PUT',
+              body: { id: item.id, status: Number(item.status) === 1 ? 0 : 1 }
+            })
+            showToast('已更新状态')
+            await loadBanners()
+          })
+
+          tr.querySelector('[data-act="delete"]').addEventListener('click', async () => {
+            if (!confirm(`确认删除轮播图 #${item.id} 吗？`)) return
+            await requestJson(`/api/admin/banner/delete?id=${encodeURIComponent(item.id)}`, { method: 'DELETE' })
+            showToast('已删除')
+            await loadBanners()
+          })
+
+          tbody.appendChild(tr)
+        }
+      }
+
+      const saveBanner = async () => {
+        const payload = {
+          image_url: bannerForm.image_url.value.trim(),
+          title: bannerForm.title.value.trim(),
+          link_url: bannerForm.link_url.value.trim(),
+          sort: Number(bannerForm.sort.value || 0),
+          status: Number(bannerForm.status.value || 1)
+        }
+
+        const file = bannerForm.file && bannerForm.file.files && bannerForm.file.files[0]
+        if (file) {
+          if (file.size > 5 * 1024 * 1024) {
+            showToast('图片过大（最大5MB）')
+            return
+          }
+          const dataUrl = await readFileAsDataUrl(file)
+          const up = await requestJson('/api/admin/upload/image', {
+            method: 'POST',
+            body: { dataUrl, filename: file.name }
+          })
+          payload.image_url = String(up?.data?.url || '').trim()
+          bannerForm.image_url.value = payload.image_url
+          bannerForm.file.value = ''
+          revokeBannerObjectUrl()
+          setBannerPreview(payload.image_url)
+        }
+        if (!payload.image_url) {
+          showToast('image_url 必填')
+          return
+        }
+
+        const id = bannerForm.id.value.trim()
+        if (id) {
+          await requestJson('/api/admin/banner/update', {
+            method: 'PUT',
+            body: { id: Number(id), ...payload }
+          })
+          showToast('已更新')
+        } else {
+          await requestJson('/api/admin/banner/add', { method: 'POST', body: payload })
+          showToast('已新增')
+        }
+        bannerReset()
+        await loadBanners()
+      }
+
+      const loadNotices = async () => {
+        const tbody = qs('#notice-tbody')
+        tbody.innerHTML = ''
+        const res = await requestJson('/api/admin/notice/list')
+        const list = Array.isArray(res.data) ? res.data : []
+        for (const item of list) {
+          const tr = document.createElement('tr')
+          const statusText = Number(item.status) === 1 ? '上架' : '下架'
+          tr.innerHTML = `
+            <td>${item.id}</td>
+            <td>
+              <div style="font-weight:700">${escapeHtml(item.title || '')}</div>
+              <div style="color: var(--muted); font-size: 12px; margin-top: 6px; white-space: pre-wrap;">${escapeHtml(item.content || '')}</div>
+            </td>
+            <td><span class="badge">${statusText}</span></td>
+            <td>
+              <div class="actions">
+                <button class="btn" data-act="edit">编辑</button>
+                <button class="btn ${Number(item.status) === 1 ? '' : 'success'}" data-act="toggle">${Number(item.status) === 1 ? '下架' : '上架'}</button>
+                <button class="btn danger" data-act="delete">删除</button>
+              </div>
+            </td>
+          `
+
+          tr.querySelector('[data-act="edit"]').addEventListener('click', () => {
+            noticeForm.id.value = String(item.id)
+            noticeForm.title.value = item.title || ''
+            noticeForm.content.value = item.content || ''
+            noticeForm.status.value = String(item.status ?? 1)
+            showToast(`已载入 #${item.id}，修改后点“保存”`) 
+            window.scrollTo({ top: 0, behavior: 'smooth' })
+          })
+
+          tr.querySelector('[data-act="toggle"]').addEventListener('click', async () => {
+            await requestJson('/api/admin/notice/status', {
+              method: 'PUT',
+              body: { id: item.id, status: Number(item.status) === 1 ? 0 : 1 }
+            })
+            showToast('已更新状态')
+            await loadNotices()
+          })
+
+          tr.querySelector('[data-act="delete"]').addEventListener('click', async () => {
+            if (!confirm(`确认删除公告 #${item.id} 吗？`)) return
+            await requestJson(`/api/admin/notice/delete?id=${encodeURIComponent(item.id)}`, { method: 'DELETE' })
+            showToast('已删除')
+            await loadNotices()
+          })
+
+          tbody.appendChild(tr)
+        }
+      }
+
+      const saveNotice = async () => {
+        const payload = {
+          title: noticeForm.title.value.trim(),
+          content: noticeForm.content.value.trim(),
+          status: Number(noticeForm.status.value || 1)
+        }
+        if (!payload.title) {
+          showToast('title 必填')
+          return
+        }
+        if (!payload.content) {
+          showToast('content 必填')
+          return
+        }
+
+        const id = noticeForm.id.value.trim()
+        if (id) {
+          await requestJson('/api/admin/notice/update', {
+            method: 'PUT',
+            body: { id: Number(id), title: payload.title, content: payload.content }
+          })
+          await requestJson('/api/admin/notice/status', {
+            method: 'PUT',
+            body: { id: Number(id), status: payload.status }
+          })
+          showToast('已更新')
+        } else {
+          await requestJson('/api/admin/notice/add', { method: 'POST', body: payload })
+          showToast('已新增')
+        }
+
+        noticeReset()
+        await loadNotices()
+      }
+
+      qs('#banner-save').addEventListener('click', () => saveBanner().catch((e) => showToast(e.message)))
+      qs('#banner-reset').addEventListener('click', bannerReset)
+      qs('#banner-reload').addEventListener('click', () => loadBanners().catch((e) => showToast(e.message)))
+
+      qs('#notice-save').addEventListener('click', () => saveNotice().catch((e) => showToast(e.message)))
+      qs('#notice-reset').addEventListener('click', noticeReset)
+      qs('#notice-reload').addEventListener('click', () => loadNotices().catch((e) => showToast(e.message)))
+
+      qs('#logout-btn').addEventListener('click', () => {
+        clearAuth()
+        showLogin()
+        showToast('已退出登录')
+      })
+
+      const doLogin = async () => {
+        const username = String(qs('#login-username').value || '').trim()
+        const password = String(qs('#login-password').value || '').trim()
+        if (!username) {
+          showToast('请输入账号')
+          return
+        }
+        if (!password) {
+          showToast('请输入密码')
+          return
+        }
+
+        const res = await requestJson('/api/admin/auth/login', {
+          method: 'POST',
+          body: { username, password },
+          auth: false
+        })
+
+        setAuth({ token: res?.data?.token, username: res?.data?.username || username })
+        showAdmin()
+        setSection('banner')
+        await bootstrapData()
+        showToast('登录成功')
+      }
+
+      qs('#login-btn').addEventListener('click', () => doLogin().catch((e) => showToast(e.message)))
+      qs('#login-password').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') qs('#login-btn').click()
+      })
+
+      const bootstrapData = async () => {
+        bannerReset()
+        noticeReset()
+        await loadBanners()
+        await loadNotices()
+      }
+
+      const bootstrap = async () => {
+        const token = getToken()
+        if (!token) {
+          showLogin()
+          return
+        }
+
+        try {
+          showAdmin()
+          setSection('banner')
+          await bootstrapData()
+        } catch (e) {
+          showToast(e.message || '初始化失败')
+        }
+      }
+
+      bootstrap()
+    </script>
+  </body>
+</html>

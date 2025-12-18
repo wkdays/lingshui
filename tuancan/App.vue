@@ -1,10 +1,17 @@
 <script>
-	import { getToken, getUser } from '@/utils/storage.js'
+	import { getToken, getUser, setToken } from '@/utils/storage.js'
 	import store from '@/store/index.js'
 	
 	export default {
-		onLaunch: function() {
+		onLaunch: function(options) {
 			console.log('App Launch')
+			// 主小程序跳转进入时接收 token
+			const extraToken = options?.referrerInfo?.extraData?.token
+			if (extraToken) {
+				setToken(extraToken)
+				store.setToken(extraToken)
+			}
+
 			// 初始化用户状态
 			const token = getToken()
 			if (token) {

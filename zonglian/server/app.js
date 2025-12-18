@@ -32,6 +32,13 @@ app.use(cors())
 app.use(express.json())
 app.use(express.static(path.join(__dirname, 'public')))
 
+app.use((req, res, next) => {
+  if (req.path && req.path.startsWith('/api/auth')) {
+    console.log(`[REQ] ${req.method} ${req.originalUrl}`)
+  }
+  next()
+})
+
 // 管理后台入口
 app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'))
@@ -221,6 +228,77 @@ app.get('/api/user/profile', authMiddleware, async (req, res) => {
     })
   } catch (err) {
     res.json({ code: 500, message: err.message })
+  }
+})
+
+// ==================== 钱包接口（统一余额） ====================
+
+// 获取余额
+app.get('/api/wallet/balance', authMiddleware, async (req, res) => {
+  try {
+    const [rows] = await db.query('SELECT balance FROM users WHERE id = ? LIMIT 1', [req.user.id])
+    if (!rows.length) {
+      return res.json({ code: 404, message: '用户不存在' })
+    }
+    return res.json({ code: 0, data: { balance: parseFloat(rows[0].balance) } })
+  } catch (err) {
+    return res.json({ code: 500, message: err.message })
+  }
+})
+
+// 余额充值（开发调试用）
+app.post('/api/wallet/recharge', authMiddleware, async (req, res) => {
+  try {
+    const amount = Number(req.body?.amount)
+    if (!amount || amount <= 0) {
+      return res.json({ code: 400, message: 'amount必须为正数' })
+    }
+    await db.query('UPDATE users SET balance = balance + ? WHERE id = ?', [amount, req.user.id])
+    const [rows] = await db.query('SELECT balance FROM users WHERE id = ? LIMIT 1', [req.user.id])
+    if (!rows.length) {
+      return res.json({ code: 404, message: '用户不存在' })
+    }
+    return res.json({ code: 0, data: { balance: parseFloat(rows[0].balance) } })
+  } catch (err) {
+    return res.json({ code: 500, message: err.message })
+  }
+})
+
+// 余额消费扣款（支付时调用）
+app.post('/api/wallet/consume', authMiddleware, async (req, res) => {
+  const connection = await db.getConnection()
+  try {
+    const amount = Number(req.body?.amount)
+    if (!amount || amount <= 0) {
+      return res.json({ code: 400, message: 'amount必须为正数' })
+    }
+
+    await connection.beginTransaction()
+    const [rows] = await connection.query('SELECT balance FROM users WHERE id = ? FOR UPDATE', [req.user.id])
+    if (!rows.length) {
+      await connection.rollback()
+      return res.json({ code: 404, message: '用户不存在' })
+    }
+
+    const balance = parseFloat(rows[0].balance)
+    const need = Number(amount.toFixed(2))
+    if (balance < need) {
+      await connection.rollback()
+      return res.json({ code: 400, message: '余额不足', data: { balance } })
+    }
+
+    await connection.query('UPDATE users SET balance = balance - ? WHERE id = ?', [need, req.user.id])
+    const [rows2] = await connection.query('SELECT balance FROM users WHERE id = ? LIMIT 1', [req.user.id])
+    await connection.commit()
+
+    return res.json({ code: 0, data: { balance: parseFloat(rows2[0].balance) } })
+  } catch (err) {
+    try {
+      await connection.rollback()
+    } catch (e) {}
+    return res.json({ code: 500, message: err.message })
+  } finally {
+    connection.release()
   }
 })
 

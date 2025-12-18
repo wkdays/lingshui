@@ -5,6 +5,7 @@
 
 const STORAGE_KEYS = {
     TOKEN: 'tg_token',
+    ZONGLIAN_TOKEN: 'zonglian_jwt',
     USER_INFO: 'tg_user_info',
     BALANCE: 'tg_shared_balance',      // 共享余额key
     TRANSACTIONS: 'tg_transactions',   // 交易记录
@@ -15,6 +16,17 @@ const STORAGE_KEYS = {
 const DEFAULT_BALANCE = 568.50
 
 export default {
+    // zonglian token（主小程序统一登录token）
+    getZonglianToken() {
+        return uni.getStorageSync(STORAGE_KEYS.ZONGLIAN_TOKEN)
+    },
+    setZonglianToken(token) {
+        uni.setStorageSync(STORAGE_KEYS.ZONGLIAN_TOKEN, token)
+    },
+    removeZonglianToken() {
+        uni.removeStorageSync(STORAGE_KEYS.ZONGLIAN_TOKEN)
+    },
+
     // 获取共享余额
     getBalance() {
         const balance = uni.getStorageSync(STORAGE_KEYS.BALANCE)
@@ -114,6 +126,7 @@ export default {
     // 清除所有数据（退出登录时调用）
     clearAll() {
         this.removeToken()
+        this.removeZonglianToken()
         this.removeUserInfo()
         uni.removeStorageSync(STORAGE_KEYS.CART)
         // 注意：余额和交易记录不清除，保持共享

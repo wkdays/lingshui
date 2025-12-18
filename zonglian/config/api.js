@@ -2,8 +2,8 @@
 // 统一账号体系 + 管理端接口使用真实后端
 
 // 后端服务地址配置
-const API_BASE_URL = 'http://localhost:8080/api'
-const SERVER_URL = 'http://localhost:8080'
+const API_BASE_URL = 'http://127.0.0.1:8080/api'
+const SERVER_URL = 'http://127.0.0.1:8080'
 
 // 请求封装（自动带Token）
 const request = (options) => {

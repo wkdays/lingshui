@@ -49,7 +49,8 @@ export default {
           uni.showToast({ title: res.message || '登录失败', icon: 'none' })
         }
       } catch (err) {
-        uni.showToast({ title: '网络错误，请稍后重试', icon: 'none' })
+        console.log('login request error:', err)
+        uni.showToast({ title: err?.errMsg || '网络错误，请稍后重试', icon: 'none' })
       }
     },
   },

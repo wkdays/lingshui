@@ -5,10 +5,13 @@
  */
 
 import storage from '@/utils/storage.js'
-import request from './request.js'
+import request, { getApiBaseUrl, requestWallet } from './request.js'
 
 // 模拟网络延迟
 const delay = (ms = 300) => new Promise(resolve => setTimeout(resolve, ms))
+
+const normalizeStaticUrl = url =>
+    typeof url === 'string' && url.startsWith('/static/') ? getApiBaseUrl() + url : url
 
 // 生成订单号
 const generateOrderNo = () => 'TG' + Date.now() + Math.random().toString(36).substr(2, 4).toUpperCase()
@@ -120,6 +123,7 @@ export default {
         }).then(res => {
             if (res.code === 0 && res.data) {
                 const nextData = { ...res.data, phone: res.data.account }
+                nextData.avatar = normalizeStaticUrl(nextData.avatar)
                 storage.setToken(res.data.token)
                 storage.setUserInfo({
                     id: nextData.id,
@@ -139,6 +143,7 @@ export default {
         return request({ url: '/api/user/profile', method: 'GET' }).then(res => {
             if (res.code === 0 && res.data) {
                 const nextData = { ...res.data, phone: res.data.account }
+                nextData.avatar = normalizeStaticUrl(nextData.avatar)
                 storage.setUserInfo({
                     id: nextData.id,
                     nickname: nextData.nickname,
@@ -156,7 +161,7 @@ export default {
 
     // 获取余额
     getBalance() {
-        return request({ url: '/api/wallet/balance', method: 'GET' }).then(res => {
+        return requestWallet({ url: '/wallet/balance', method: 'GET' }).then(res => {
             if (res.code === 0 && res.data && typeof res.data.balance !== 'undefined') {
                 storage.setBalance(res.data.balance)
             }
@@ -166,8 +171,8 @@ export default {
 
     // 余额充值
     recharge(amount) {
-        return request({
-            url: '/api/wallet/recharge',
+        return requestWallet({
+            url: '/wallet/recharge',
             method: 'POST',
             data: { amount }
         }).then(res => {
@@ -180,6 +185,7 @@ export default {
 
     // 获取交易记录
     getTransactions() {
+        // zonglian 暂未提供交易流水接口，这里先保持本地/旧接口兼容
         return request({ url: '/api/wallet/transactions', method: 'GET' }).then(res => ({
             ...res,
             data: Array.isArray(res.data) ? res.data : []
@@ -189,10 +195,15 @@ export default {
     // ==================== 首页数据 ====================
 
     getBanners() {
-        return request({ url: '/api/banner/list', method: 'GET' }).then(res => ({
-            ...res,
-            data: Array.isArray(res.data) ? res.data : []
-        }))
+        return request({ url: '/api/banner/list', method: 'GET' }).then(res => {
+            const list = Array.isArray(res.data)
+                ? res.data.map(item => ({
+                    ...item,
+                    image: normalizeStaticUrl(item.image)
+                }))
+                : []
+            return { ...res, data: list }
+        })
     },
 
     getNotices() {
@@ -346,16 +357,37 @@ export default {
     },
 
     payOrder(data) {
+        const payType = String(data?.payType || 'balance')
+        const orderId = data?.orderId
+        if (!orderId) {
+            return Promise.resolve({ code: -1, message: 'orderId必填' })
+        }
+        if (payType === 'balance') {
+            return request({ url: `/api/order/detail/${encodeURIComponent(orderId)}`, method: 'GET' }).then(detailRes => {
+                if (detailRes.code !== 0 || !detailRes.data) return detailRes
+                const need = Number(detailRes.data.totalPrice || detailRes.data.pay_amount || 0)
+                return requestWallet({ url: '/wallet/consume', method: 'POST', data: { amount: need } }).then(wRes => {
+                    if (wRes.code !== 0) return wRes
+                    if (wRes.data && typeof wRes.data.balance !== 'undefined') {
+                        storage.setBalance(wRes.data.balance)
+                    }
+                    return request({ url: '/api/order/pay', method: 'POST', data: { ...data, payType: 'wechat' } })
+                })
+            }).then(res => {
+                if (res.code === 0) {
+                    const cart = storage.getCart().filter(item => !item.selected)
+                    storage.setCart(cart)
+                }
+                return res
+            })
+        }
+
         return request({
             url: '/api/order/pay',
             method: 'POST',
             data
         }).then(res => {
             if (res.code === 0) {
-                if (res.data && typeof res.data.balance !== 'undefined') {
-                    storage.setBalance(res.data.balance)
-                }
-                // 清空已购买的购物车商品（购物车仍为本地存储模块）
                 const cart = storage.getCart().filter(item => !item.selected)
                 storage.setCart(cart)
             }

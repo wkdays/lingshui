@@ -3,6 +3,11 @@ import 'dotenv/config'
 export const config = {
   port: Number(process.env.PORT || 3000),
   jwtSecret: process.env.JWT_SECRET || 'dev_secret_change_me',
+  zonglianBaseUrl: process.env.ZONGLIAN_BASE_URL || 'http://127.0.0.1:8080',
+  admin: {
+    user: process.env.ADMIN_USER || 'admin',
+    password: process.env.ADMIN_PASSWORD || 'admin123456'
+  },
   db: {
     host: process.env.DB_HOST || '127.0.0.1',
     port: Number(process.env.DB_PORT || 3306),

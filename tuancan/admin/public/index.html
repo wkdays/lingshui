@@ -20,6 +20,42 @@
 </head>
 <body class="bg-gray-100">
   <div id="app">
+    <!-- 登录页面 -->
+    <div v-if="!isLoggedIn" class="min-h-screen flex items-center justify-center">
+      <div class="bg-white rounded-xl shadow-lg p-8 w-96">
+        <div class="text-center mb-8">
+          <i class="fas fa-utensils text-5xl text-green-500 mb-4"></i>
+          <h1 class="text-2xl font-bold text-gray-800">团餐管理系统</h1>
+          <p class="text-gray-500 mt-2">管理员登录</p>
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">手机号</label>
+          <div class="relative">
+            <i class="fas fa-phone absolute left-3 top-3 text-gray-400"></i>
+            <input v-model="loginForm.phone" type="text" placeholder="请输入手机号" 
+              class="w-full border rounded-lg pl-10 pr-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-green-500">
+          </div>
+        </div>
+        <div class="mb-6">
+          <label class="block text-sm font-medium text-gray-700 mb-1">密码</label>
+          <div class="relative">
+            <i class="fas fa-lock absolute left-3 top-3 text-gray-400"></i>
+            <input v-model="loginForm.password" type="password" placeholder="请输入密码" 
+              class="w-full border rounded-lg pl-10 pr-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              @keyup.enter="handleLogin">
+          </div>
+        </div>
+        <button @click="handleLogin" :disabled="loginLoading" 
+          class="w-full btn-primary text-white py-3 rounded-lg font-medium flex items-center justify-center">
+          <i v-if="loginLoading" class="fas fa-spinner fa-spin mr-2"></i>
+          {{ loginLoading ? '登录中...' : '登 录' }}
+        </button>
+        <p v-if="loginError" class="text-red-500 text-sm text-center mt-4">{{ loginError }}</p>
+      </div>
+    </div>
+
+    <!-- 管理页面（登录后显示） -->
+    <template v-else>
     <!-- 侧边栏 -->
     <aside class="sidebar fixed left-0 top-0 h-full bg-white shadow-lg z-10">
       <div class="p-4 border-b">
@@ -43,6 +79,14 @@
         <div class="menu-item flex items-center p-3 rounded-lg cursor-pointer mb-2" :class="{active: currentPage === 'categories'}" @click="currentPage = 'categories'">
           <i class="fas fa-tags w-6"></i>
           <span>分类管理</span>
+        </div>
+        <div class="border-t mt-4 pt-4">
+          <div class="text-xs text-gray-400 mb-2 px-3">当前账号</div>
+          <div class="px-3 text-sm text-gray-600 mb-3">{{ adminPhone }}</div>
+          <div class="menu-item flex items-center p-3 rounded-lg cursor-pointer text-red-500 hover:bg-red-50" @click="handleLogout">
+            <i class="fas fa-sign-out-alt w-6"></i>
+            <span>退出登录</span>
+          </div>
         </div>
       </nav>
     </aside>
@@ -285,10 +329,19 @@
                 <option :value="0">下架</option>
               </select>
             </div>
-            <div class="col-span-2">
-              <label class="block text-sm font-medium mb-1">图片URL</label>
-              <input v-model="dishForm.image" type="text" class="w-full border rounded-lg px-3 py-2" placeholder="输入图片地址或上传">
+          <div class="col-span-2">
+            <label class="block text-sm font-medium mb-1">图片</label>
+            <div class="flex items-center gap-2 mb-2">
+              <input v-model="dishForm.image" type="text" class="flex-1 border rounded-lg px-3 py-2" placeholder="输入图片地址或上传">
+              <label class="cursor-pointer bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg border">
+                <i class="fas fa-upload mr-2"></i>上传
+                <input type="file" class="hidden" accept="image/*" @change="handleImageUpload($event, 'dish')">
+              </label>
             </div>
+            <div v-if="dishForm.image" class="w-24 h-24 border rounded-lg overflow-hidden bg-gray-50">
+              <img :src="dishForm.image" class="w-full h-full object-cover">
+            </div>
+          </div>
             <div class="col-span-2">
               <label class="block text-sm font-medium mb-1">描述</label>
               <textarea v-model="dishForm.description" rows="3" class="w-full border rounded-lg px-3 py-2"></textarea>
@@ -317,8 +370,17 @@
         </div>
         <div class="p-6">
           <div class="mb-4">
-            <label class="block text-sm font-medium mb-1">图片URL *</label>
-            <input v-model="bannerForm.image" type="text" class="w-full border rounded-lg px-3 py-2">
+            <label class="block text-sm font-medium mb-1">图片 *</label>
+            <div class="flex items-center gap-2 mb-2">
+              <input v-model="bannerForm.image" type="text" class="flex-1 border rounded-lg px-3 py-2" placeholder="输入图片地址或上传">
+              <label class="cursor-pointer bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg border">
+                <i class="fas fa-upload mr-2"></i>上传
+                <input type="file" class="hidden" accept="image/*" @change="handleImageUpload($event, 'banner')">
+              </label>
+            </div>
+            <div v-if="bannerForm.image" class="w-full h-40 border rounded-lg overflow-hidden bg-gray-50">
+              <img :src="bannerForm.image" class="w-full h-full object-cover">
+            </div>
           </div>
           <div class="mb-4">
             <label class="block text-sm font-medium mb-1">标题</label>
@@ -422,6 +484,7 @@
         </div>
       </div>
     </div>
+    </template>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/vue@3.3.4/dist/vue.global.prod.js"></script>
@@ -432,6 +495,82 @@
     createApp({
       setup() {
         const API_BASE = '';
+        
+        // 登录相关
+        const isLoggedIn = ref(false);
+        const adminPhone = ref('');
+        const loginForm = ref({ phone: '', password: '' });
+        const loginLoading = ref(false);
+        const loginError = ref('');
+        const authToken = ref('');
+        
+        // 检查登录状态
+        const checkAuth = async () => {
+          const token = localStorage.getItem('admin_token');
+          if (token) {
+            try {
+              const res = await axios.get(`${API_BASE}/api/check-auth`, {
+                headers: { 'Authorization': token }
+              });
+              if (res.data.code === 0) {
+                authToken.value = token;
+                adminPhone.value = res.data.data.phone;
+                isLoggedIn.value = true;
+                // 设置axios默认header
+                axios.defaults.headers.common['Authorization'] = token;
+                return true;
+              }
+            } catch (e) {}
+          }
+          localStorage.removeItem('admin_token');
+          isLoggedIn.value = false;
+          return false;
+        };
+        
+        // 登录
+        const handleLogin = async () => {
+          if (!loginForm.value.phone || !loginForm.value.password) {
+            loginError.value = '请输入手机号和密码';
+            return;
+          }
+          loginLoading.value = true;
+          loginError.value = '';
+          try {
+            const res = await axios.post(`${API_BASE}/api/login`, loginForm.value);
+            if (res.data.code === 0) {
+              const token = res.data.data.token;
+              localStorage.setItem('admin_token', token);
+              authToken.value = token;
+              adminPhone.value = res.data.data.phone;
+              axios.defaults.headers.common['Authorization'] = token;
+              isLoggedIn.value = true;
+              // 加载数据
+              loadCategories();
+              loadDishes();
+              loadBanners();
+              loadNotices();
+            } else {
+              loginError.value = res.data.msg || '登录失败';
+            }
+          } catch (e) {
+            loginError.value = '网络错误，请重试';
+          }
+          loginLoading.value = false;
+        };
+        
+        // 登出
+        const handleLogout = async () => {
+          try {
+            await axios.post(`${API_BASE}/api/logout`);
+          } catch (e) {}
+          localStorage.removeItem('admin_token');
+          delete axios.defaults.headers.common['Authorization'];
+          isLoggedIn.value = false;
+          adminPhone.value = '';
+          authToken.value = '';
+          loginForm.value = { phone: '', password: '' };
+        };
+        
         const currentPage = ref('dishes');
         
         // 数据
@@ -482,7 +621,19 @@
         
         // 菜品操作
         const openDishModal = (dish = null) => {
-          dishForm.value = dish ? { ...dish } : { status: 1, stock: 100, meal_time: 'lunch' };
+          dishForm.value = dish ? { ...dish } : {
+            status: 1,
+            stock: 100,
+            meal_time: 'lunch',
+            unit: '份',
+            is_special: 0,
+            image: '',
+            description: ''
+          };
+          // 新增时默认选中第一个分类
+          if (!dish && categories.value.length > 0) {
+            dishForm.value.category_id = categories.value[0].id;
+          }
           showDishModal.value = true;
         };
         
@@ -491,13 +642,34 @@
             alert('请填写必要字段');
             return;
           }
-          if (dishForm.value.id) {
-            await axios.put(`${API_BASE}/api/dishes/${dishForm.value.id}`, dishForm.value);
-          } else {
-            await axios.post(`${API_BASE}/api/dishes`, dishForm.value);
+          try {
+            const payload = {
+              ...dishForm.value,
+              image: dishForm.value.image ?? '',
+              description: dishForm.value.description ?? '',
+              unit: dishForm.value.unit ?? '份',
+              stock: dishForm.value.stock ?? 100,
+              is_special: dishForm.value.is_special ?? 0,
+              meal_time: dishForm.value.meal_time ?? 'lunch',
+              status: dishForm.value.status ?? 1,
+              original_price: (dishForm.value.original_price ?? dishForm.value.price)
+            };
+            let res;
+            if (dishForm.value.id) {
+              res = await axios.put(`${API_BASE}/api/dishes/${dishForm.value.id}`, payload);
+            } else {
+              res = await axios.post(`${API_BASE}/api/dishes`, payload);
+            }
+            if (res.data.code === 0) {
+              showDishModal.value = false;
+              loadDishes();
+            } else {
+              alert(res.data.msg || '保存失败');
+            }
+          } catch (e) {
+            console.error(e);
+            alert('保存失败：' + (e.response?.data?.msg || e.message || '网络错误'));
           }
-          showDishModal.value = false;
-          loadDishes();
         };
         
         const toggleDishStatus = async (dish) => {
@@ -514,7 +686,14 @@
         
         // 轮播操作
         const openBannerModal = (banner = null) => {
-          bannerForm.value = banner ? { ...banner } : { status: 1, sort: 0 };
+          bannerForm.value = banner ? { ...banner } : {
+            status: 1,
+            sort: 0,
+            image: '',
+            title: '',
+            subtitle: '',
+            link: ''
+          };
           showBannerModal.value = true;
         };
         
@@ -523,13 +702,31 @@
             alert('请填写图片URL');
             return;
           }
-          if (bannerForm.value.id) {
-            await axios.put(`${API_BASE}/api/banners/${bannerForm.value.id}`, bannerForm.value);
-          } else {
-            await axios.post(`${API_BASE}/api/banners`, bannerForm.value);
+          try {
+            const payload = {
+              ...bannerForm.value,
+              title: bannerForm.value.title ?? '',
+              subtitle: bannerForm.value.subtitle ?? '',
+              link: bannerForm.value.link ?? '',
+              sort: bannerForm.value.sort ?? 0,
+              status: bannerForm.value.status ?? 1
+            };
+            let res;
+            if (bannerForm.value.id) {
+              res = await axios.put(`${API_BASE}/api/banners/${bannerForm.value.id}`, payload);
+            } else {
+              res = await axios.post(`${API_BASE}/api/banners`, payload);
+            }
+            if (res.data.code === 0) {
+              showBannerModal.value = false;
+              loadBanners();
+            } else {
+              alert(res.data.msg || '保存失败');
+            }
+          } catch (e) {
+            console.error(e);
+            alert('保存失败：' + (e.response?.data?.msg || e.message || '网络错误'));
           }
-          showBannerModal.value = false;
-          loadBanners();
         };
         
         const deleteBanner = async (banner) => {
@@ -541,7 +738,12 @@
         
         // 公告操作
         const openNoticeModal = (notice = null) => {
-          noticeForm.value = notice ? { ...notice } : { status: 1, type: 'notice' };
+          noticeForm.value = notice ? { ...notice } : {
+            status: 1,
+            type: 'notice',
+            title: '',
+            content: ''
+          };
           showNoticeModal.value = true;
         };
         
@@ -550,13 +752,29 @@
             alert('请填写标题');
             return;
           }
-          if (noticeForm.value.id) {
-            await axios.put(`${API_BASE}/api/notices/${noticeForm.value.id}`, noticeForm.value);
-          } else {
-            await axios.post(`${API_BASE}/api/notices`, noticeForm.value);
+          try {
+            const payload = {
+              ...noticeForm.value,
+              content: noticeForm.value.content ?? '',
+              type: noticeForm.value.type ?? 'notice',
+              status: noticeForm.value.status ?? 1
+            };
+            let res;
+            if (noticeForm.value.id) {
+              res = await axios.put(`${API_BASE}/api/notices/${noticeForm.value.id}`, payload);
+            } else {
+              res = await axios.post(`${API_BASE}/api/notices`, payload);
+            }
+            if (res.data.code === 0) {
+              showNoticeModal.value = false;
+              loadNotices();
+            } else {
+              alert(res.data.msg || '保存失败');
+            }
+          } catch (e) {
+            console.error(e);
+            alert('保存失败：' + (e.response?.data?.msg || e.message || '网络错误'));
           }
-          showNoticeModal.value = false;
-          loadNotices();
         };
         
         const toggleNoticeStatus = async (notice) => {
@@ -573,7 +791,7 @@
         
         // 分类操作
         const openCategoryModal = (category = null) => {
-          categoryForm.value = category ? { ...category } : { status: 1, sort: 0 };
+          categoryForm.value = category ? { ...category } : { status: 1, sort: 0, name: '' };
           showCategoryModal.value = true;
         };
         
@@ -582,13 +800,28 @@
             alert('请填写分类名称');
             return;
           }
-          if (categoryForm.value.id) {
-            await axios.put(`${API_BASE}/api/categories/${categoryForm.value.id}`, categoryForm.value);
-          } else {
-            await axios.post(`${API_BASE}/api/categories`, categoryForm.value);
+          try {
+            const payload = {
+              ...categoryForm.value,
+              sort: categoryForm.value.sort ?? 0,
+              status: categoryForm.value.status ?? 1
+            };
+            let res;
+            if (categoryForm.value.id) {
+              res = await axios.put(`${API_BASE}/api/categories/${categoryForm.value.id}`, payload);
+            } else {
+              res = await axios.post(`${API_BASE}/api/categories`, payload);
+            }
+            if (res.data.code === 0) {
+              showCategoryModal.value = false;
+              loadCategories();
+            } else {
+              alert(res.data.msg || '保存失败');
+            }
+          } catch (e) {
+            console.error(e);
+            alert('保存失败：' + (e.response?.data?.msg || e.message || '网络错误'));
           }
-          showCategoryModal.value = false;
-          loadCategories();
         };
         
         const deleteCategory = async (category) => {
@@ -598,6 +831,32 @@
           }
         };
         
+        // 图片上传
+        const handleImageUpload = async (event, type) => {
+          const file = event.target.files[0];
+          if (!file) return;
+          
+          const formData = new FormData();
+          formData.append('file', file);
+          
+          try {
+            const res = await axios.post(`${API_BASE}/api/upload`, formData, {
+              headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            if (res.data.code === 0) {
+              if (type === 'dish') {
+                dishForm.value.image = res.data.data.url;
+              } else if (type === 'banner') {
+                bannerForm.value.image = res.data.data.url;
+              }
+            } else {
+              alert(res.data.msg || '上传失败');
+            }
+          } catch (e) {
+            alert('上传出错，请重试');
+          }
+        };
+
         // 辅助方法
         const getCategoryName = (id) => {
           const cat = categories.value.find(c => c.id === id);
@@ -619,14 +878,22 @@
           return map[type] || '';
         };
         
-        onMounted(() => {
-          loadCategories();
-          loadDishes();
-          loadBanners();
-          loadNotices();
+        onMounted(async () => {
+          // 先检查登录状态
+          const loggedIn = await checkAuth();
+          if (loggedIn) {
+            loadCategories();
+            loadDishes();
+            loadBanners();
+            loadNotices();
+          }
         });
         
         return {
+          // 登录相关
+          isLoggedIn, adminPhone, loginForm, loginLoading, loginError,
+          handleLogin, handleLogout,
+          // 页面相关
           currentPage,
           dishes, banners, notices, categories,
           dishSearch, dishCategoryFilter,
@@ -637,7 +904,8 @@
           openBannerModal, saveBanner, deleteBanner,
           openNoticeModal, saveNotice, toggleNoticeStatus, deleteNotice,
           openCategoryModal, saveCategory, deleteCategory,
-          getCategoryName, getMealTimeName, getNoticeTypeName, getNoticeTypeClass
+          getCategoryName, getMealTimeName, getNoticeTypeName, getNoticeTypeClass,
+          handleImageUpload
         };
       }
     }).mount('#app');

@@ -1,6 +1,13 @@
 {
 	"pages": [
 		{
+			"path": "pages/store/select",
+			"style": {
+				"navigationBarTitleText": "门店选择",
+				"navigationStyle": "custom"
+			}
+		},
+		{
 			"path": "pages/index/index",
 			"style": {
 				"navigationBarTitleText": "团餐订购",

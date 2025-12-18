@@ -21,7 +21,7 @@
 			<view class="balance-card" @click="goBalance">
 				<view class="balance-left">
 					<text class="balance-label">账户余额</text>
-					<text class="balance-value">¥{{userInfo.balance?.toFixed(2) || '0.00'}}</text>
+					<text class="balance-value">{{isLogin ? `¥${Number(userInfo.balance || 0).toFixed(2)}` : '登录后查看'}}</text>
 				</view>
 				<view class="balance-right">
 					<text class="balance-btn">充值</text>
@@ -114,8 +114,7 @@ export default {
 				this.loadUserInfo()
 				this.loadMessages()
 			} else {
-				// 未登录也显示共享余额
-				this.userInfo = { balance: storage.getBalance() }
+				this.userInfo = {}
 			}
 		},
 		async loadUserInfo() {
@@ -177,8 +176,7 @@ export default {
 					if (res.confirm) {
 						storage.clearAll()
 						this.isLogin = false
-						// 保留余额显示
-						this.userInfo = { balance: storage.getBalance() }
+						this.userInfo = {}
 						uni.showToast({ title: '已退出登录', icon: 'success' })
 					}
 				}

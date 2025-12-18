@@ -49,9 +49,14 @@ export default {
 		}
 	},
 	onLoad() {
+		if (!storage.getToken()) {
+			uni.navigateTo({ url: '/pages/login/login' })
+			return
+		}
 		this.loadBalance()
 	},
 	onShow() {
+		if (!storage.getToken()) return
 		// 每次显示时刷新余额
 		this.balance = storage.getBalance()
 	},

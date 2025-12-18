@@ -22,7 +22,8 @@
 				<text class="input-icon">🔒</text>
 				<input 
 					class="input" 
-					type="password" 
+					type="text" 
+					:password="true"
 					v-model="password" 
 					placeholder="请输入密码" />
 			</view>

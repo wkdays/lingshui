@@ -103,9 +103,12 @@ export default {
         simpleTasks: [],
         bountyTasks: [],
       },
+      miniProgramTargets: {
+        'mini-groupon': { appId: 'wxa8e973088aaec702', path: 'pages/index/index' },
+        'mini-catering': { appId: 'wxa8e973088aaec702', path: 'pages/index/index' },
+      },
       quickNavList: [
         { id: 'groupon', label: '团购', target: 'mini-groupon' },
-        { id: 'travel', label: '旅游', target: 'mini-travel' },
         { id: 'catering', label: '团餐', target: 'mini-catering' },
       ],
       filterList: ['全部', '软件助力', '简单关注', '人脉拓展', '筛选'],
@@ -121,12 +124,30 @@ export default {
   async onLoad() {
     const info = uni.getSystemInfoSync()
     this.statusBarHeight = info.statusBarHeight || 20
+    this.loadMiniProgramTargets()
     await this.loadData()
   },
   onPullDownRefresh() {
     this.loadData()
   },
   methods: {
+    loadMiniProgramTargets() {
+      const saved = uni.getStorageSync('mini_program_targets')
+      if (!saved) return
+      try {
+        const obj = typeof saved === 'string' ? JSON.parse(saved) : saved
+        if (obj && typeof obj === 'object') {
+          const merged = { ...this.miniProgramTargets }
+          Object.keys(obj || {}).forEach((key) => {
+            const next = obj[key]
+            if (!next || typeof next !== 'object') return
+            if (!next.appId) return
+            merged[key] = { ...merged[key], ...next }
+          })
+          this.miniProgramTargets = merged
+        }
+      } catch (e) {}
+    },
     async loadData() {
       const res = await fetchHome()
       this.homeData = res.data
@@ -139,7 +160,41 @@ export default {
       uni.navigateTo({ url: `/pages/task/square?type=${type}` })
     },
     openQuick(nav) {
-      uni.showToast({ title: `${nav.label}入口已预留`, icon: 'none' })
+      const token = uni.getStorageSync('token')
+      if (!token) {
+        uni.showToast({ title: '请先登录', icon: 'none' })
+        setTimeout(() => {
+          uni.navigateTo({ url: '/pages/auth/login' })
+        }, 800)
+        return
+      }
+
+      const target = this.miniProgramTargets?.[nav.target]
+      const appId = target?.appId
+      if (!appId) {
+        uni.showToast({ title: '请先配置目标小程序AppId', icon: 'none' })
+        return
+      }
+
+      try {
+        const currentAppId = wx?.getAccountInfoSync?.()?.miniProgram?.appId
+        if (currentAppId && currentAppId === appId) {
+          uni.showToast({ title: '目标AppId与当前一致，请检查配置', icon: 'none' })
+          return
+        }
+      } catch (e) {}
+
+      uni.navigateToMiniProgram({
+        appId,
+        path: target?.path,
+        envVersion: 'develop',
+        extraData: { token },
+        success: () => {},
+        fail: (e) => {
+          console.log('navigateToMiniProgram fail:', e)
+          uni.showToast({ title: e?.errMsg || '跳转失败', icon: 'none' })
+        },
+      })
     },
     onBannerClick(item) {
       if (item.link) {

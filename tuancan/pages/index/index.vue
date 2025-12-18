@@ -201,12 +201,13 @@
 </template>
 
 <script>
-import { homeApi, cartApi } from '@/api/mock.js'
+import { homeApi, cartApi, productApi } from '@/api/mock.js'
 import store from '@/store/index.js'
 
 export default {
 	data() {
 		return {
+			adminApiBase: 'http://localhost:3001',
 			banners: [
 				{ id: 1, image: '/static/images/banner1.png', title1: '健康饮食', title2: '美好生活', sub: '健康搭配每一天' },
 				{ id: 2, image: '/static/images/banner2.png', title1: '新用户', title2: '首单立减', sub: '新人专享优惠' },
@@ -281,7 +282,7 @@ export default {
 		async initData() {
 			await this.loadBanners()
 			await this.loadNotices()
-			this.loadWeekMeals()
+			await this.loadWeekMeals()
 		},
 		async loadBanners() {
 			const res = await homeApi.getBanners()
@@ -310,11 +311,15 @@ export default {
 			}
 		},
 		prevWeek() {
-			this.currentWeekStart.setDate(this.currentWeekStart.getDate() - 7)
+			const newDate = new Date(this.currentWeekStart.getTime())
+			newDate.setDate(newDate.getDate() - 7)
+			this.currentWeekStart = newDate
 			this.loadWeekMeals()
 		},
 		nextWeek() {
-			this.currentWeekStart.setDate(this.currentWeekStart.getDate() + 7)
+			const newDate = new Date(this.currentWeekStart.getTime())
+			newDate.setDate(newDate.getDate() + 7)
+			this.currentWeekStart = newDate
 			this.loadWeekMeals()
 		},
 		setMealFilter(filter) {
@@ -324,12 +329,40 @@ export default {
 			if (this.currentMealFilter !== 'all' && this.currentMealFilter !== mealType) return
 			this.weekMeals[dayIndex][mealType].selected = !this.weekMeals[dayIndex][mealType].selected
 		},
-		showDayMenu(day) {
+		resolveDishImage(url) {
+			if (!url) return ''
+			if (typeof url === 'string' && url.startsWith('/uploads/')) {
+				return `${this.adminApiBase}${url}`
+			}
+			return url
+		},
+		mapBackendDishes(list) {
+			return (list || []).map(d => ({
+				id: d.id,
+				name: d.name,
+				image: this.resolveDishImage(d.image),
+				description: d.description || '',
+				price: d.price,
+				quantity: 0
+			}))
+		},
+		async showDayMenu(day) {
 			this.currentDayMenu = day
 			// 重置菜品数量
 			this.breakfastDishes.forEach(d => d.quantity = 0)
 			this.lunchDishes.forEach(d => d.quantity = 0)
 			this.dinnerDishes.forEach(d => d.quantity = 0)
+			// 从后台拉取菜品（按餐次），失败则继续使用本地默认菜单
+			try {
+				const [b, l, d] = await Promise.all([
+					productApi.getProductList({ mealTime: 'breakfast' }),
+					productApi.getProductList({ mealTime: 'lunch' }),
+					productApi.getProductList({ mealTime: 'dinner' })
+				])
+				if (b && b.code === 0) this.breakfastDishes = this.mapBackendDishes(b.data)
+				if (l && l.code === 0) this.lunchDishes = this.mapBackendDishes(l.data)
+				if (d && d.code === 0) this.dinnerDishes = this.mapBackendDishes(d.data)
+			} catch (e) {}
 			this.showMenuPopup = true
 		},
 		closeMenuPopup() {

@@ -1,7 +1,13 @@
 <script>
+	import storage from '@/utils/storage.js'
+
 	export default {
-		onLaunch: function() {
+		onLaunch: function(options) {
 			console.log('App Launch - 社区团购')
+			const extraToken = options?.referrerInfo?.extraData?.token
+			if (extraToken) {
+				storage.setZonglianToken(extraToken)
+			}
 		},
 		onShow: function() {
 			console.log('App Show')

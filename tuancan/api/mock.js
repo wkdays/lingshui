@@ -1,8 +1,149 @@
 // Mock数据接口 - 后端开发完成后替换为真实接口
 // 余额持久化到本地存储，模拟四个小程序共享余额
 
-// 模拟延迟
-const delay = (ms = 300) => new Promise(resolve => setTimeout(resolve, ms))
+import { getToken as getLocalToken } from '@/utils/storage.js'
+
+// 管理后台API地址（开发时使用本地地址，生产环境替换为实际地址）
+const ADMIN_API_BASE = 'http://localhost:3001'
+
+const ZONGLIAN_API_BASE = 'http://127.0.0.1:8080/api'
+
+// 模拟延迟（设为0实现立即返回）
+const delay = (ms = 0) => new Promise(resolve => setTimeout(resolve, ms))
+
+// 调用管理后台API（设置1秒超时，快速回退到本地数据）
+const fetchAdminApi = async (url) => {
+  try {
+    const res = await new Promise((resolve, reject) => {
+      uni.request({
+        url: `${ADMIN_API_BASE}${url}`,
+        method: 'GET',
+        timeout: 1000,
+        success: (response) => resolve(response),
+        fail: (err) => reject(err)
+      })
+    })
+    if (res.statusCode === 200 && res.data) {
+      return res.data
+    }
+    return null
+  } catch (e) {
+    return null
+  }
+}
+
+const fetchZonglianApi = async ({ url, method = 'GET', data, token } = {}) => {
+  try {
+    const res = await new Promise((resolve, reject) => {
+      uni.request({
+        url: `${ZONGLIAN_API_BASE}${url}`,
+        method,
+        data,
+        timeout: 5000,
+        header: token ? { Authorization: `Bearer ${token}` } : {},
+        success: (response) => resolve(response),
+        fail: (err) => reject(err)
+      })
+    })
+    if (res.statusCode === 200 && res.data) {
+      return res.data
+    }
+    return null
+  } catch (e) {
+    return null
+  }
+}
+
+// 调用管理后台POST API
+const postAdminApi = async (url, data) => {
+  try {
+    const res = await new Promise((resolve, reject) => {
+      uni.request({
+        url: `${ADMIN_API_BASE}${url}`,
+        method: 'POST',
+        data: data,
+        timeout: 2000,
+        header: { 'Content-Type': 'application/json' },
+        success: (response) => resolve(response),
+        fail: (err) => reject(err)
+      })
+    })
+    if (res.statusCode === 200 && res.data) {
+      return res.data
+    }
+    return null
+  } catch (e) {
+    return null
+  }
+}
+
+// ============ 下单时间限制配置 ============
+const ORDER_TIME_CONFIG = {
+  workday: {
+    breakfast: { hour: 17, minute: 0, dayOffset: -1, desc: '前一天17:00前' },
+    lunch: { hour: 9, minute: 0, dayOffset: 0, desc: '当天9:00前' },
+    dinner: { hour: 14, minute: 0, dayOffset: 0, desc: '当天14:00前' },
+    afternoon: { hour: 11, minute: 0, dayOffset: 0, desc: '当天11:00前' }
+  },
+  weekend: {
+    breakfast: { hour: 17, minute: 0, dayOffset: -1, desc: '前一天17:00前' },
+    lunch: { hour: 17, minute: 0, dayOffset: -1, desc: '前一天17:00前' },
+    dinner: { hour: 17, minute: 0, dayOffset: -1, desc: '前一天17:00前' },
+    afternoon: { hour: 17, minute: 0, dayOffset: -1, desc: '前一天17:00前' }
+  }
+}
+
+// 判断是否为周末
+const isWeekend = (date) => {
+  const day = date.getDay()
+  return day === 0 || day === 6
+}
+
+// 检查下单时间（本地校验）
+const checkOrderTimeLocal = (deliveryDate, mealTime) => {
+  const delivery = new Date(deliveryDate)
+  const now = new Date()
+  const weekend = isWeekend(delivery)
+  const config = weekend ? ORDER_TIME_CONFIG.weekend : ORDER_TIME_CONFIG.workday
+  const mealConfig = config[mealTime]
+  
+  if (!mealConfig) return { canOrder: true, reason: '' }
+  
+  const deadline = new Date(delivery)
+  deadline.setDate(deadline.getDate() + mealConfig.dayOffset)
+  deadline.setHours(mealConfig.hour, mealConfig.minute, 0, 0)
+  
+  const canOrder = now < deadline
+  const dayType = weekend ? '周末' : '工作日'
+  const mealNames = { breakfast: '早餐', lunch: '午餐', dinner: '晚餐', afternoon: '下午茶' }
+  
+  return {
+    canOrder,
+    deadline: deadline.toISOString(),
+    rule: mealConfig.desc,
+    isWeekend: weekend,
+    reason: canOrder ? '' : `${dayType}${mealNames[mealTime]}下单已截止（需${mealConfig.desc}下单）`
+  }
+}
+
+// 检查取消订单时间
+const checkCancelTimeLocal = (deliveryDate) => {
+  const delivery = new Date(deliveryDate)
+  const now = new Date()
+  
+  // 取消截止时间：配送日期前一天的17:00
+  const deadline = new Date(delivery)
+  deadline.setDate(deadline.getDate() - 1)
+  deadline.setHours(17, 0, 0, 0)
+  
+  const canCancel = now < deadline
+  
+  return {
+    canCancel,
+    deadline: deadline.toISOString(),
+    reason: canCancel ? '' : '订单取消已截止（需提前一天17:00前取消），如需取消请联系客服'
+  }
+}
 
 // 余额存储Key（四个小程序共用同一个Key实现共享）
 const BALANCE_KEY = 'tuancan_shared_balance'
@@ -56,14 +197,14 @@ const mockUser = {
   set balance(val) { saveBalance(val) }
 }
 
-// 轮播图数据（政府机构团餐：机关食堂、职工餐厅）
+// 轮播图数据（备用，后台不可用时使用）
 const mockBanners = [
   { id: 1, image: '/static/images/banner1.png', title1: '机关食堂', title2: '营养配餐', sub: '科学搭配 健康饮食', link: '' },
   { id: 2, image: '/static/images/banner2.png', title1: '职工福利', title2: '团餐优惠', sub: '储值卡消费享折扣', link: '/pages/special/special' },
   { id: 3, image: '/static/images/banner3.png', title1: '便民服务', title2: '在线订餐', sub: '提前预订 按时取餐', link: '/pages/shop/list' }
 ]
 
-// 公告数据（政府机构团餐相关公告）
+// 公告数据（备用，后台不可用时使用）
 const mockNotices = [
   { id: 1, type: 'notice', title: '【食堂通知】本周菜单已更新，欢迎预订', time: '2024-01-15', content: '本周食堂新增多款营养套餐，包含：红烧肉套餐、清蒸鱼套餐、素食套餐等，欢迎各位职工通过小程序提前预订。预订时间：每日8:00-17:00。' },
   { id: 2, type: 'activity', title: '【充值优惠】储值卡充值满500送50', time: '2024-01-14', content: '即日起至1月31日，虚拟储值卡充值满500元赠送50元，充值金额可在四个小程序中共享使用。充值方式：我的-余额-充值。' },
@@ -78,7 +219,7 @@ const mockShops = [
   { id: 3, name: '家常小炒', logo: '/static/images/shop3.png', score: 4.5, distance: '1.2km', tags: ['家常菜', '实惠'], minPrice: 12 }
 ]
 
-// 商品分类
+// 商品分类（备用）
 const mockCategories = [
   { id: 1, name: '全部' },
   { id: 2, name: '早餐' },
@@ -87,7 +228,7 @@ const mockCategories = [
   { id: 5, name: '特价' }
 ]
 
-// 商品列表
+// 商品列表（备用）
 const mockProducts = [
   { id: 1, name: '香米饭套餐', image: '/static/images/food1.png', price: 12, originalPrice: 15, stock: 50, sales: 328, isSpecial: true, categoryId: 3, shopId: 1, specs: ['小份', '大份'], description: '香喷喷的白米饭' },
   { id: 2, name: '咖喱炒饭', image: '/static/images/food2.png', price: 25, originalPrice: 25, stock: 30, sales: 256, isSpecial: false, categoryId: 3, shopId: 1, specs: ['标准'], description: '香浓咖喱，米饭Q弹' },
@@ -153,8 +294,13 @@ const mockMessages = [
 const generateWeekMeals = (startDate) => {
   const meals = []
   const weekDays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
+  // 确保startDate是有效的Date对象
+  let baseDate = startDate
+  if (!baseDate || !(baseDate instanceof Date) || isNaN(baseDate.getTime())) {
+    baseDate = new Date()
+  }
   for (let i = 0; i < 7; i++) {
-    const date = new Date(startDate)
+    const date = new Date(baseDate.getTime())
     date.setDate(date.getDate() + i)
     const month = date.getMonth() + 1
     const day = date.getDate()
@@ -177,7 +323,16 @@ export const userApi = {
   // 登录
   async login(params) {
     await delay()
-    return { code: 0, data: { token: 'mock_token_123', userInfo: mockUser }, msg: 'success' }
+    const phone = params?.phone || (params?.type === 'wechat' ? '13800138000' : '')
+    const password = params?.password || (params?.type === 'wechat' ? '123456' : '')
+    const res = await fetchZonglianApi({ url: '/auth/login', method: 'POST', data: { phone, password } })
+    if (res && res.code === 0 && res.data) {
+      if (res.data.user && typeof res.data.user.balance !== 'undefined') {
+        saveBalance(res.data.user.balance)
+      }
+      return { code: 0, data: { token: res.data.token, userInfo: res.data.user }, msg: 'success' }
+    }
+    return { code: res?.code ?? -1, data: null, msg: res?.message || '登录失败' }
   },
   // 获取用户信息
   async getUserInfo() {
@@ -187,24 +342,50 @@ export const userApi = {
   // 获取余额
   async getBalance() {
     await delay()
-    return { code: 0, data: { balance: mockUser.balance }, msg: 'success' }
+    const token = getLocalToken()
+    if (!token) {
+      return { code: 401, data: null, msg: '未登录' }
+    }
+    const res = await fetchZonglianApi({ url: '/wallet/balance', method: 'GET', token })
+    if (res && res.code === 0 && res.data) {
+      if (typeof res.data.balance !== 'undefined') {
+        saveBalance(res.data.balance)
+      }
+      return { code: 0, data: { balance: Number(res.data.balance || 0) }, msg: 'success' }
+    }
+    return { code: res?.code ?? -1, data: { balance: getStoredBalance() }, msg: res?.message || '获取余额失败' }
   }
 }
 
 // 首页相关
 export const homeApi = {
-  // 获取轮播图
+  // 获取轮播图（优先从后台获取）
   async getBanners() {
+    const res = await fetchAdminApi('/api/mp/banners')
+    if (res && res.code === 0) {
+      return res
+    }
+    // 后台不可用时使用本地数据
     await delay()
     return { code: 0, data: mockBanners, msg: 'success' }
   },
-  // 获取公告
+  // 获取公告（优先从后台获取）
   async getNotices() {
+    const res = await fetchAdminApi('/api/mp/notices')
+    if (res && res.code === 0) {
+      return res
+    }
+    // 后台不可用时使用本地数据
     await delay()
     return { code: 0, data: mockNotices, msg: 'success' }
   },
   // 获取推荐商品
   async getRecommendProducts() {
+    const res = await fetchAdminApi('/api/mp/dishes')
+    if (res && res.code === 0) {
+      // 返回前4个菜品作为推荐
+      return { code: 0, data: res.data.slice(0, 4), msg: 'success' }
+    }
     await delay()
     const recommended = mockProducts.filter(p => p.sales > 200).slice(0, 4)
     return { code: 0, data: recommended, msg: 'success' }
@@ -233,13 +414,38 @@ export const shopApi = {
 
 // 商品相关
 export const productApi = {
-  // 获取分类
+  // 获取分类（优先从后台获取）
   async getCategories() {
+    const res = await fetchAdminApi('/api/mp/categories')
+    if (res && res.code === 0) {
+      return res
+    }
     await delay()
     return { code: 0, data: mockCategories, msg: 'success' }
   },
-  // 获取商品列表
+  // 获取商品列表（优先从后台获取）
   async getProductList(params = {}) {
+    // 构建查询参数
+    let url = '/api/mp/dishes?'
+    if (params.categoryId && params.categoryId !== 1) {
+      if (params.categoryId === 5) {
+        url += 'is_special=1&'
+      } else {
+        url += `category_id=${params.categoryId}&`
+      }
+    }
+    if (params.mealTime) {
+      url += `meal_time=${params.mealTime}&`
+    }
+    const res = await fetchAdminApi(url)
+    if (res && res.code === 0) {
+      let list = res.data
+      if (params.keyword) {
+        list = list.filter(p => p.name.includes(params.keyword))
+      }
+      return { code: 0, data: list, msg: 'success' }
+    }
+    // 后台不可用时使用本地数据
     await delay()
     let list = [...mockProducts]
     if (params.categoryId && params.categoryId !== 1) {
@@ -257,14 +463,22 @@ export const productApi = {
     }
     return { code: 0, data: list, msg: 'success' }
   },
-  // 获取商品详情
+  // 获取商品详情（优先从后台获取）
   async getProductDetail(id) {
+    const res = await fetchAdminApi(`/api/mp/dishes/${id}`)
+    if (res && res.code === 0) {
+      return res
+    }
     await delay()
     const product = mockProducts.find(p => p.id === id)
     return { code: 0, data: product, msg: 'success' }
   },
-  // 获取特价商品
+  // 获取特价商品（优先从后台获取）
   async getSpecialProducts() {
+    const res = await fetchAdminApi('/api/mp/specials')
+    if (res && res.code === 0) {
+      return res
+    }
     await delay()
     const specials = mockProducts.filter(p => p.isSpecial)
     return { code: 0, data: specials, msg: 'success' }
@@ -328,12 +542,69 @@ export const cartApi = {
 
 // 订单相关
 export const orderApi = {
-  // 创建订单
+  // 检查下单时间
+  async checkOrderTime(deliveryDate, mealTime) {
+    // 优先调用后台API
+    const res = await postAdminApi('/api/check-order-time', { deliveryDate, mealTime })
+    if (res && res.code === 0) {
+      return res
+    }
+    // 后台不可用时使用本地校验
+    const result = checkOrderTimeLocal(deliveryDate, mealTime)
+    return { code: result.canOrder ? 0 : -1, data: result, msg: result.reason || 'success' }
+  },
+  
+  // 检查库存
+  async checkStock(items) {
+    // 调用后台API检查库存
+    const res = await postAdminApi('/api/check-stock', { items })
+    if (res) {
+      return res
+    }
+    // 后台不可用时默认通过
+    return { code: 0, data: { sufficient: true, insufficientItems: [] }, msg: 'success' }
+  },
+  
+  // 扣减库存
+  async deductStock(items) {
+    const res = await postAdminApi('/api/deduct-stock', { items })
+    return res || { code: 0, msg: 'success' }
+  },
+  
+  // 恢复库存
+  async restoreStock(items) {
+    const res = await postAdminApi('/api/restore-stock', { items })
+    return res || { code: 0, msg: 'success' }
+  },
+  
+  // 创建订单（带时间和库存校验）
   async createOrder(params) {
     await delay()
+    
+    // 1. 检查下单时间（如果有配送日期和餐次信息）
+    if (params.deliveryDate && params.mealTime) {
+      const timeCheck = checkOrderTimeLocal(params.deliveryDate, params.mealTime)
+      if (!timeCheck.canOrder) {
+        return { code: -1, data: null, msg: timeCheck.reason }
+      }
+    }
+    
+    // 2. 检查库存（如果商品有dishId）
+    const stockItems = params.products
+      .filter(p => p.dishId || p.id)
+      .map(p => ({ dishId: p.dishId || p.id, quantity: p.quantity || 1 }))
+    
+    if (stockItems.length > 0) {
+      const stockRes = await postAdminApi('/api/check-stock', { items: stockItems })
+      if (stockRes && stockRes.code !== 0) {
+        return { code: -1, data: stockRes.data, msg: stockRes.msg || '库存不足' }
+      }
+    }
+    
     const orderId = 'ORDER' + Date.now()
     const newOrder = {
       id: orderId,
+      orderNo: orderId,
       status: ORDER_STATUS.PENDING_PAY,
       statusText: '待支付',
       createTime: new Date().toLocaleString(),
@@ -341,6 +612,10 @@ export const orderApi = {
       payAmount: params.payAmount,
       deliveryType: params.deliveryType,
       deliveryAddress: params.deliveryAddress,
+      deliveryDate: params.deliveryDate,
+      contactName: params.contactName,
+      contactPhone: params.contactPhone,
+      remark: params.remark,
       products: params.products
     }
     mockOrders.unshift(newOrder)
@@ -351,25 +626,30 @@ export const orderApi = {
     await delay()
     const order = mockOrders.find(o => o.id === orderId)
     if (order) {
-      // 检查余额是否充足
-      const currentBalance = getStoredBalance()
-      if (currentBalance < order.payAmount) {
-        return { code: -1, data: null, msg: '余额不足，请先充值' }
+      if (payType === 0) {
+        const token = getLocalToken()
+        if (!token) {
+          return { code: 401, data: null, msg: '未登录' }
+        }
+        const res = await fetchZonglianApi({ url: '/wallet/consume', method: 'POST', data: { amount: order.payAmount }, token })
+        if (!res || res.code !== 0) {
+          const message = res?.message || res?.msg || '支付失败'
+          return { code: res?.code ?? -1, data: null, msg: message }
+        }
+        if (res.data && typeof res.data.balance !== 'undefined') {
+          saveBalance(res.data.balance)
+        }
+        const transactions = getStoredTransactions()
+        transactions.unshift({
+          id: Date.now(),
+          type: 'consume',
+          title: '订餐消费',
+          amount: -order.payAmount,
+          time: new Date().toLocaleString(),
+          orderId: orderId
+        })
+        saveTransactions(transactions)
       }
-      // 扣减余额
-      const newBalance = currentBalance - order.payAmount
-      saveBalance(newBalance)
-      // 记录交易
-      const transactions = getStoredTransactions()
-      transactions.unshift({
-        id: Date.now(),
-        type: 'consume',
-        title: '订餐消费',
-        amount: -order.payAmount,
-        time: new Date().toLocaleString(),
-        orderId: orderId
-      })
-      saveTransactions(transactions)
       // 更新订单状态
       order.status = ORDER_STATUS.PENDING_DELIVER
       order.statusText = '待发货'
@@ -392,38 +672,52 @@ export const orderApi = {
     const order = mockOrders.find(o => o.id === orderId)
     return { code: 0, data: order, msg: 'success' }
   },
-  // 取消订单（当天订单无法取消，只能提前1天取消）
+  // 取消订单（需提前1天17:00前取消）
   async cancelOrder(orderId) {
     await delay()
     const order = mockOrders.find(o => o.id === orderId)
-    if (order) {
-      // 检查是否是当天订单
-      const orderDate = new Date(order.createTime).toDateString()
-      const today = new Date().toDateString()
-      if (orderDate === today) {
-        return { code: -1, data: null, msg: '当天订单无法取消，如需修改请联系客服' }
-      }
-      // 已支付订单退款
-      if (order.status === ORDER_STATUS.PENDING_DELIVER || order.status === ORDER_STATUS.PENDING_PICKUP) {
-        const currentBalance = getStoredBalance()
-        const newBalance = currentBalance + order.payAmount
-        saveBalance(newBalance)
-        // 记录退款交易
-        const transactions = getStoredTransactions()
-        transactions.unshift({
-          id: Date.now(),
-          type: 'recharge',
-          title: '订单退款',
-          amount: order.payAmount,
-          time: new Date().toLocaleString(),
-          orderId: orderId
-        })
-        saveTransactions(transactions)
-      }
-      order.status = ORDER_STATUS.CANCELLED
-      order.statusText = '已取消'
+    if (!order) {
+      return { code: -1, data: null, msg: '订单不存在' }
     }
-    return { code: 0, data: order, msg: 'success' }
+    
+    // 检查取消时间限制
+    const deliveryDate = order.deliveryDate || order.createTime
+    const cancelCheck = checkCancelTimeLocal(deliveryDate)
+    if (!cancelCheck.canCancel) {
+      return { code: -1, data: null, msg: cancelCheck.reason }
+    }
+    
+    // 已支付订单退款
+    if (order.status === ORDER_STATUS.PENDING_DELIVER || order.status === ORDER_STATUS.PENDING_PICKUP) {
+      const currentBalance = getStoredBalance()
+      const newBalance = currentBalance + order.payAmount
+      saveBalance(newBalance)
+      // 记录退款交易
+      const transactions = getStoredTransactions()
+      transactions.unshift({
+        id: Date.now(),
+        type: 'recharge',
+        title: '订单退款',
+        amount: order.payAmount,
+        time: new Date().toLocaleString(),
+        orderId: orderId
+      })
+      saveTransactions(transactions)
+      
+      // 恢复库存
+      const stockItems = order.products
+        .filter(p => p.dishId || p.id)
+        .map(p => ({ dishId: p.dishId || p.id, quantity: p.quantity || 1 }))
+      if (stockItems.length > 0) {
+        await postAdminApi('/api/restore-stock', { items: stockItems })
+      }
+    }
+    
+    order.status = ORDER_STATUS.CANCELLED
+    order.statusText = '已取消'
+    order.cancelTime = new Date().toLocaleString()
+    
+    return { code: 0, data: order, msg: '订单已取消，退款已返还至余额' }
   },
   // 确认收货
   async confirmOrder(orderId) {
@@ -435,35 +729,76 @@ export const orderApi = {
     }
     return { code: 0, data: order, msg: 'success' }
   },
-  // 打印订单（支付成功后触发，推送至外卖打印机）
+  // 打印订单（支付成功后触发，推送至飞鹅云打印机）
   async printOrder(orderId) {
     await delay()
     const order = mockOrders.find(o => o.id === orderId)
-    if (order) {
-      // 生成打印内容（约定格式）
-      const printContent = {
-        orderId: order.id,
+    if (!order) {
+      return { code: -1, data: null, msg: '订单不存在' }
+    }
+    
+    // 调用后台打印API（对接飞鹅云打印机）
+    const printRes = await postAdminApi('/api/printer/print', { 
+      order: {
+        id: order.id,
+        orderNo: order.orderNo || order.id,
         createTime: order.createTime,
         payTime: order.payTime,
         deliveryType: order.deliveryType,
         deliveryAddress: order.deliveryAddress,
-        products: order.products.map(p => ({
-          name: p.name,
-          spec: p.spec,
-          quantity: p.quantity,
-          price: p.price
-        })),
+        deliveryDate: order.deliveryDate,
+        contactName: order.contactName,
+        contactPhone: order.contactPhone,
+        remark: order.remark,
+        products: order.products,
         totalAmount: order.totalAmount,
         payAmount: order.payAmount,
-        printTime: new Date().toLocaleString()
+        deliveryFee: order.deliveryFee || 0
+      },
+      times: 1
+    })
+    
+    if (printRes && printRes.code === 0) {
+      order.printStatus = 1
+      order.printId = printRes.data?.printId
+      return { 
+        code: 0, 
+        data: { 
+          printed: true, 
+          printId: printRes.data?.printId,
+          mock: printRes.data?.mock || false
+        }, 
+        msg: printRes.msg || '打印任务已推送' 
       }
-      console.log('=== 打印机推送内容 ===')
-      console.log(JSON.stringify(printContent, null, 2))
-      // 实际对接时调用打印机服务API
-      // await fetch('http://printer-service/print', { method: 'POST', body: JSON.stringify(printContent) })
-      return { code: 0, data: { printed: true, content: printContent }, msg: '打印任务已推送' }
     }
-    return { code: -1, data: null, msg: '订单不存在' }
+    
+    // 后台不可用时，本地模拟打印
+    console.log('=== 本地模拟打印（后台不可用） ===')
+    console.log('订单号:', order.id)
+    console.log('配送地址:', order.deliveryAddress)
+    console.log('商品:', order.products.map(p => `${p.name} x${p.quantity || 1}`).join(', '))
+    console.log('金额:', order.payAmount)
+    
+    return { 
+      code: 0, 
+      data: { printed: true, mock: true }, 
+      msg: '打印任务已推送（模拟）' 
+    }
+  },
+  
+  // 获取下单时间规则
+  getOrderTimeConfig() {
+    return ORDER_TIME_CONFIG
+  },
+  
+  // 检查指定日期各餐次的可下单状态
+  getAvailableMeals(deliveryDate) {
+    const mealTypes = ['breakfast', 'lunch', 'dinner', 'afternoon']
+    const result = {}
+    for (const mealType of mealTypes) {
+      result[mealType] = checkOrderTimeLocal(deliveryDate, mealType)
+    }
+    return result
   }
 }
 

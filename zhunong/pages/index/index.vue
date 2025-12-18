@@ -72,7 +72,7 @@
 			:interval="3000"
 		>
 			<swiper-item v-for="item in banners" :key="item.id">
-				<image :src="item.image" mode="aspectFill" class="banner-img"></image>
+				<image :src="item.image" mode="aspectFill" class="banner-img" @tap="goBannerLink(item)"></image>
 			</swiper-item>
 		</swiper>
 
@@ -183,6 +183,18 @@ export default {
 		},
 		goNoticeList() {
 			uni.navigateTo({ url: '/pages/message/message' })
+		},
+		goBannerLink(item) {
+			const link = String(item?.link || '').trim()
+			if (!link) {
+				uni.showToast({ title: '未配置跳转链接', icon: 'none' })
+				return
+			}
+			const fixed = /^https?:\/\//i.test(link) ? link : `https://${link}`
+			uni.navigateTo({
+				url: '/pages/webview/webview?url=' + encodeURIComponent(fixed),
+				fail: () => uni.showToast({ title: '跳转失败（可能被域名校验拦截）', icon: 'none' })
+			})
 		},
 		async addToCart(item) {
 			await api.addToCart({ goodsId: item.id, count: 1 })

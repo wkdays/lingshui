@@ -116,6 +116,12 @@
 			"style": {
 				"navigationBarTitleText": "编辑地址"
 			}
+		},
+		{
+			"path": "pages/webview/webview",
+			"style": {
+				"navigationBarTitleText": "详情"
+			}
 		}
 	],
 	"globalStyle": {
